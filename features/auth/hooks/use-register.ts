@@ -29,9 +29,12 @@ export function useRegister() {
     setError(null);
 
     try {
-      const payload: RegisterRequest = { name: name.trim(), email: email.trim(), phone: phone.trim(), password };
-      const response = await apiClient.post<LoginResponse>('/auth/register', payload);
-      setAuth(response.token, response.user);
+      // TODO: descomentar quando integração estiver pronta
+      // const payload: RegisterRequest = { name: name.trim(), email: email.trim(), phone: phone.trim(), password };
+      // const response = await apiClient.post<LoginResponse>('/auth/register', payload);
+      // setAuth(response.token, response.user);
+
+      setAuth('mock-token', { id: '1', name: name.trim(), email: email.trim(), phone: phone.trim() });
       router.replace('/(tabs)');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar conta.');

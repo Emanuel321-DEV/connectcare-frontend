@@ -1,28 +1,30 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Share, Clipboard } from 'react-native';
-import { apiClient } from '@/shared/services/api.client';
-import { useAuthStore } from '@/features/auth/store/auth.store';
+// import { apiClient } from '@/shared/services/api.client';
+// import { useAuthStore } from '@/features/auth/store/auth.store';
 import type { InviteCode } from '../types/invite.types';
+
+const MOCK_INVITE: InviteCode = { code: 'C4RE-8X92', expiresAt: new Date(Date.now() + 86400000).toISOString() };
 
 export function useGenerateInvite() {
   const [invite, setInvite] = useState<InviteCode | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const token = useAuthStore((s) => s.token);
-  const user = useAuthStore((s) => s.user);
 
   const fetchInvite = useCallback(async () => {
-    if (!token || !user) return;
     setLoading(true);
-    try {
-      const response = await apiClient.get<InviteCode>(`/users/${user.id}/invite`, token);
-      setInvite(response);
-    } catch {
-      setInvite({ code: 'C4RE-8X92', expiresAt: new Date(Date.now() + 86400000).toISOString() });
-    } finally {
-      setLoading(false);
-    }
-  }, [token, user]);
+    // TODO: descomentar quando integração estiver pronta
+    // try {
+    //   const response = await apiClient.get<InviteCode>(`/users/${user.id}/invite`, token);
+    //   setInvite(response);
+    // } catch {
+    //   setInvite(MOCK_INVITE);
+    // } finally {
+    //   setLoading(false);
+    // }
+    setInvite(MOCK_INVITE);
+    setLoading(false);
+  }, []);
 
   useEffect(() => { fetchInvite(); }, [fetchInvite]);
 

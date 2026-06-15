@@ -23,11 +23,14 @@ export function useLogin() {
     setError(null);
 
     try {
-      const response = await apiClient.post<LoginResponse>('/auth/login', {
-        email: email.trim(),
-        password,
-      });
-      setAuth(response.token, response.user);
+      // TODO: descomentar quando integração estiver pronta
+      // const response = await apiClient.post<LoginResponse>('/auth/login', {
+      //   email: email.trim(),
+      //   password,
+      // });
+      // setAuth(response.token, response.user);
+
+      setAuth('mock-token', { id: '1', name: 'Dona Maria', email: email.trim(), phone: '' });
       router.replace('/(tabs)');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao fazer login.');

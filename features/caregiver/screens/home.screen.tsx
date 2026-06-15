@@ -100,7 +100,8 @@ function PatientCard({ patient }: { patient: PatientSummary }) {
         </View>
         <TouchableOpacity
           className="border-2 border-[#004E9F] rounded-lg px-4 py-2"
-          onPress={() => router.push({ pathname: '/(caregiver)/patient-detail', params: { patientId: patient.id } })}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          onPress={() => router.push({ pathname: '/(caregiver)/patient-detail' as any, params: { patientId: patient.id } })}
         >
           <Text className="text-[#004E9F] text-sm font-semibold">Ver Detalhes</Text>
         </TouchableOpacity>
