@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/shared/services/api.client';
+import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { MOCK_SCHEDULE } from '@/shared/mocks';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -20,7 +21,7 @@ export function useSchedule() {
         return;
       }
       const date = selectedDate.toISOString().split('T')[0];
-      const response = await apiClient.get<ScheduleSection[]>(`/users/${user?.id}/schedule?date=${date}`, token ?? undefined);
+      const response = await apiClient.get<ScheduleSection[]>(API_ROUTES.users.schedule(user?.id ?? '', date), token ?? undefined);
       setSections(response);
     } catch {
       setSections(MOCK_SCHEDULE);

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/shared/services/api.client';
+import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { MOCK_NOTIFICATIONS } from '@/shared/mocks';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -18,7 +19,7 @@ export function useNotifications() {
         setNotifications(MOCK_NOTIFICATIONS);
         return;
       }
-      const response = await apiClient.get<Notification[]>(`/users/${user?.id}/notifications`, token ?? undefined);
+      const response = await apiClient.get<Notification[]>(API_ROUTES.users.notifications(user?.id ?? ''), token ?? undefined);
       setNotifications(response);
     } catch {
       setNotifications(MOCK_NOTIFICATIONS);
@@ -32,7 +33,7 @@ export function useNotifications() {
   function markAsRead(id: string) {
     setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
     if (!USE_MOCK) {
-      apiClient.patch(`/users/${user?.id}/notifications/${id}/read`, {}, token ?? undefined).catch(() => {});
+      apiClient.patch(API_ROUTES.users.notificationRead(user?.id ?? '', id), {}, token ?? undefined).catch(() => {});
     }
   }
 

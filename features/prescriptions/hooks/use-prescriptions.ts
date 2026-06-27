@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/shared/services/api.client';
+import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { MOCK_PRESCRIPTIONS } from '@/shared/mocks';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -22,8 +23,8 @@ export function usePrescriptions() {
         setPrescriptions(MOCK_PRESCRIPTIONS);
         return;
       }
-      const activeParam = filter === 'all' ? '' : `&active=${filter === 'active'}`;
-      const response = await apiClient.get<Prescription[]>(`/prescriptions?user_id=${user?.id}${activeParam}`, token ?? undefined);
+      const active = filter === 'all' ? undefined : filter === 'active';
+      const response = await apiClient.get<Prescription[]>(API_ROUTES.prescriptions.list(user?.id ?? '', active), token ?? undefined);
       setPrescriptions(response);
     } catch {
       setPrescriptions(MOCK_PRESCRIPTIONS);

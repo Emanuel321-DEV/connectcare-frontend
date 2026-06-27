@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/shared/services/api.client';
+import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { MOCK_INVITES } from '@/shared/mocks';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -21,7 +22,7 @@ export function useAcceptInvite() {
         setPendingInvites(MOCK_INVITES);
         return;
       }
-      const response = await apiClient.get<PendingInvite[]>(`/users/${user?.id}/invites/pending`, token ?? undefined);
+      const response = await apiClient.get<PendingInvite[]>(API_ROUTES.users.invitesPending(user?.id ?? ''), token ?? undefined);
       setPendingInvites(response);
     } catch {
       setPendingInvites(MOCK_INVITES);
@@ -38,7 +39,7 @@ export function useAcceptInvite() {
     setError(null);
     try {
       if (!USE_MOCK) {
-        await apiClient.post(`/invites/validate`, { code: code.trim() }, token ?? undefined);
+        await apiClient.post(API_ROUTES.invites.validate, { code: code.trim() }, token ?? undefined);
         await fetchPendingInvites();
       }
       setCode('');
@@ -53,7 +54,7 @@ export function useAcceptInvite() {
     setPendingInvites((prev) => prev.filter((i) => i.id !== inviteId));
     if (!USE_MOCK) {
       try {
-        await apiClient.post(`/invites/${inviteId}/accept`, {}, token ?? undefined);
+        await apiClient.post(API_ROUTES.invites.accept(inviteId), {}, token ?? undefined);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erro ao aceitar convite.');
       }
@@ -64,7 +65,7 @@ export function useAcceptInvite() {
     setPendingInvites((prev) => prev.filter((i) => i.id !== inviteId));
     if (!USE_MOCK) {
       try {
-        await apiClient.post(`/invites/${inviteId}/reject`, {}, token ?? undefined);
+        await apiClient.post(API_ROUTES.invites.reject(inviteId), {}, token ?? undefined);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Erro ao recusar convite.');
       }

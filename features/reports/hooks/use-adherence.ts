@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/shared/services/api.client';
+import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { MOCK_REPORT } from '@/shared/mocks';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -19,7 +20,7 @@ export function useAdherence() {
         setReport({ ...MOCK_REPORT, period });
         return;
       }
-      const response = await apiClient.get<AdherenceReport>(`/users/${user?.id}/adherence?period=${period}`, token ?? undefined);
+      const response = await apiClient.get<AdherenceReport>(API_ROUTES.users.adherence(user?.id ?? '', period), token ?? undefined);
       setReport(response);
     } catch {
       setReport({ ...MOCK_REPORT, period });

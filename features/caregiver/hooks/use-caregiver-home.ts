@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '@/shared/services/api.client';
+import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { MOCK_PATIENTS } from '@/shared/mocks';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -20,7 +21,7 @@ export function useCaregiverHome() {
         setPatients(MOCK_PATIENTS);
         return;
       }
-      const response = await apiClient.get<PatientSummary[]>(`/users/${user?.id}/patients`, token ?? undefined);
+      const response = await apiClient.get<PatientSummary[]>(API_ROUTES.users.patients(user?.id ?? ''), token ?? undefined);
       setPatients(response);
     } catch {
       setPatients(MOCK_PATIENTS);

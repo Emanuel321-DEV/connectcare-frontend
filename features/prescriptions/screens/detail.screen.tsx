@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/shared/services/api.client';
+import { API_ROUTES } from '@/shared/services/api.routes';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import type { Prescription } from '../types/prescription.types';
 
@@ -24,7 +25,7 @@ export default function PrescriptionDetailScreen() {
     async function fetch() {
       if (!token || !id) return;
       try {
-        const p = await apiClient.get<Prescription>(`/prescriptions/${id}`, token);
+        const p = await apiClient.get<Prescription>(API_ROUTES.prescriptions.detail(id ?? ''), token);
         setPrescription(p);
       } catch {
         setPrescription({
@@ -43,8 +44,8 @@ export default function PrescriptionDetailScreen() {
     if (!prescription || !token) return;
     setToggling(true);
     try {
-      const endpoint = prescription.active ? 'deactivate' : 'activate';
-      await apiClient.post(`/prescriptions/${id}/${endpoint}`, {}, token);
+      const route = prescription.active ? API_ROUTES.prescriptions.deactivate(id ?? '') : API_ROUTES.prescriptions.activate(id ?? '');
+      await apiClient.post(route, {}, token);
       setPrescription((prev) => prev ? { ...prev, active: !prev.active } : prev);
     } catch { /* silently */ } finally {
       setToggling(false);

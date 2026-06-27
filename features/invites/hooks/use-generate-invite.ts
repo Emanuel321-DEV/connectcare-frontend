@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Share, Clipboard } from 'react-native';
 import { apiClient } from '@/shared/services/api.client';
+import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { MOCK_INVITE } from '@/shared/mocks';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -20,7 +21,7 @@ export function useGenerateInvite() {
         setInvite(MOCK_INVITE);
         return;
       }
-      const response = await apiClient.get<InviteCode>(`/users/${user?.id}/invite`, token ?? undefined);
+      const response = await apiClient.get<InviteCode>(API_ROUTES.users.invite(user?.id ?? ''), token ?? undefined);
       setInvite(response);
     } catch {
       setInvite(MOCK_INVITE);
