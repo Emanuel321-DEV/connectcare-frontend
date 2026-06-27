@@ -1,40 +1,33 @@
 import { useState, useEffect, useCallback } from 'react';
-// import { apiClient } from '@/shared/services/api.client';
+import { apiClient } from '@/shared/services/api.client';
+import { USE_MOCK } from '@/shared/config/env';
+import { MOCK_PATIENTS } from '@/shared/mocks';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import type { PatientSummary } from '../types/caregiver.types';
 
-export interface PatientSummary {
-  id: string;
-  name: string;
-  adherencePercentage: number;
-  pendingDoses: number;
-  alertMessage?: string;
-}
-
-const MOCK_PATIENTS: PatientSummary[] = [
-  { id: '1', name: 'Sr. Alberto Silva', adherencePercentage: 90, pendingDoses: 0 },
-  { id: '2', name: 'Dona Maria Sousa', adherencePercentage: 60, pendingDoses: 2, alertMessage: '2 doses pendentes' },
-  { id: '3', name: 'Sr. João Mendes', adherencePercentage: 85, pendingDoses: 1 },
-];
+export type { PatientSummary };
 
 export function useCaregiverHome() {
   const [patients, setPatients] = useState<PatientSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const user = useAuthStore((s) => s.user);
+  const token = useAuthStore((s) => s.token);
 
   const fetchPatients = useCallback(async () => {
     setLoading(true);
-    // TODO: descomentar quando integração estiver pronta
-    // try {
-    //   const response = await apiClient.get<PatientSummary[]>(`/users/${user.id}/patients`, token);
-    //   setPatients(response);
-    // } catch {
-    //   setPatients(MOCK_PATIENTS);
-    // } finally {
-    //   setLoading(false);
-    // }
-    setPatients(MOCK_PATIENTS);
-    setLoading(false);
-  }, []);
+    try {
+      if (USE_MOCK) {
+        setPatients(MOCK_PATIENTS);
+        return;
+      }
+      const response = await apiClient.get<PatientSummary[]>(`/users/${user?.id}/patients`, token ?? undefined);
+      setPatients(response);
+    } catch {
+      setPatients(MOCK_PATIENTS);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id, token]);
 
   useEffect(() => { fetchPatients(); }, [fetchPatients]);
 
