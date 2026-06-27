@@ -15,3 +15,11 @@ export interface ScheduleSection {
   timeRange: string;
   doses: DoseItem[];
 }
+
+export interface PatientHomeData {
+  adherencePercentage: number;
+  todayDoses: DoseItem[];
+  takenCount: number;
+  pendingCount: number;
+  skippedCount: number;
+}

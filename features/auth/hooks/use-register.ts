@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { apiClient } from '@/shared/services/api.client';
+import { API_ROUTES } from '@/shared/services/api.routes';
+import { USE_MOCK } from '@/shared/config/env';
+import { MOCK_AUTH_RESPONSE } from '@/shared/mocks';
 import { useAuthStore } from '../store/auth.store';
 import type { LoginResponse, RegisterRequest } from '../types/auth.types';
 
@@ -29,12 +32,18 @@ export function useRegister() {
     setError(null);
 
     try {
-      // TODO: descomentar quando integração estiver pronta
-      // const payload: RegisterRequest = { name: name.trim(), email: email.trim(), phone: phone.trim(), password };
-      // const response = await apiClient.post<LoginResponse>('/auth/register', payload);
-      // setAuth(response.token, response.user);
-
-      setAuth('mock-token', { id: '1', name: name.trim(), email: email.trim(), phone: phone.trim() });
+      if (USE_MOCK) {
+        setAuth(MOCK_AUTH_RESPONSE.token, {
+          ...MOCK_AUTH_RESPONSE.user,
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+        });
+      } else {
+        const payload: RegisterRequest = { name: name.trim(), email: email.trim(), phone: phone.trim(), password };
+        const response = await apiClient.post<LoginResponse>(API_ROUTES.auth.register, payload);
+        setAuth(response.token, response.user);
+      }
       router.replace('/(tabs)');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar conta.');

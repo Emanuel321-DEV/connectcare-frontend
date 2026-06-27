@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { apiClient } from '@/shared/services/api.client';
+import { API_ROUTES } from '@/shared/services/api.routes';
+import { USE_MOCK } from '@/shared/config/env';
+import { MOCK_AUTH_RESPONSE } from '@/shared/mocks';
 import { useAuthStore } from '../store/auth.store';
 import type { LoginResponse } from '../types/auth.types';
 
@@ -23,14 +26,15 @@ export function useLogin() {
     setError(null);
 
     try {
-      // TODO: descomentar quando integração estiver pronta
-      // const response = await apiClient.post<LoginResponse>('/auth/login', {
-      //   email: email.trim(),
-      //   password,
-      // });
-      // setAuth(response.token, response.user);
-
-      setAuth('mock-token', { id: '1', name: 'Dona Maria', email: email.trim(), phone: '' });
+      if (USE_MOCK) {
+        setAuth(MOCK_AUTH_RESPONSE.token, { ...MOCK_AUTH_RESPONSE.user, email: email.trim() });
+      } else {
+        const response = await apiClient.post<LoginResponse>(API_ROUTES.auth.login, {
+          email: email.trim(),
+          password,
+        });
+        setAuth(response.token, response.user);
+      }
       router.replace('/(tabs)');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao fazer login.');
