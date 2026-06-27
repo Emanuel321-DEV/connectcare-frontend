@@ -1,7 +1,10 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function CaregiverTabLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
@@ -10,8 +13,8 @@ export default function CaregiverTabLayout() {
           backgroundColor: '#F9F9FB',
           borderTopWidth: 2,
           borderTopColor: '#C1C6D5',
-          height: 80,
-          paddingBottom: 12,
+          height: 80 + insets.bottom,
+          paddingBottom: 12 + insets.bottom,
           paddingTop: 8,
         },
         tabBarActiveTintColor: '#0066CC',
