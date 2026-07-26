@@ -7,6 +7,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { usePushNotifications } from '@/hooks/use-push-notifications';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 
 export const unstable_settings = {
   anchor: '(auth)',
@@ -15,17 +16,8 @@ export const unstable_settings = {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
-  // ===========================================================
-  // PUSH NOTIFICATIONS
-  //
-  // Por enquanto userId está como null pois não há autenticação.
-  // Quando implementar o login, substitua null pelo ID do usuário:
-  //
-  //   const { userId } = useAuth(); // seu contexto de auth
-  //   const { fcmToken, notification } = usePushNotifications(userId);
-  //
-  // ===========================================================
-  const { fcmToken, notification } = usePushNotifications(null);
+  const userId = useAuthStore((s) => s.user?.id ?? null);
+  const { fcmToken, notification } = usePushNotifications(userId);
 
   // Log para desenvolvimento — remova quando for para produção
   if (__DEV__) {
