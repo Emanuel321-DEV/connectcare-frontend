@@ -12,13 +12,16 @@ export const API_ROUTES = {
     notifications: (userId: string) => `/users/${userId}/notifications`,
     notificationRead: (userId: string, notifId: string) => `/users/${userId}/notifications/${notifId}/read`,
     doseRecords: (userId: string) => `/users/${userId}/dose-records`,
-    invitesPending: (userId: string) => `/users/${userId}/invites/pending`,
-    invite: (userId: string) => `/users/${userId}/invite`,
     detail: (userId: string) => `/users/${userId}`,
+    // Lista todos os usuários (não há endpoint de busca por email no backend;
+    // usado pra localizar um cuidador pelo email filtrando no cliente).
+    list: () => `/users`,
     // Pacientes vinculados a um cuidador (ver docs/api.yaml do backend).
     charges: (caregiverId: string) => `/users/${caregiverId}/charges`,
     // Cuidadores vinculados a um paciente (ver docs/api.yaml do backend).
     caregivers: (patientId: string) => `/users/${patientId}/caregivers`,
+    // Convites (pendentes e histórico) recebidos/criados por este usuário.
+    invitations: (userId: string) => `/users/${userId}/invitations`,
   },
 
   prescriptions: {
@@ -40,8 +43,11 @@ export const API_ROUTES = {
   },
 
   invites: {
-    validate: '/invites/validate',
-    accept: (inviteId: string) => `/invites/${inviteId}/accept`,
-    reject: (inviteId: string) => `/invites/${inviteId}/reject`,
+    // Rota real do backend é /invitations (não /invites). Criar um convite já
+    // exige conhecer o caregiver_id de antemão — não existe "código público
+    // redimível depois".
+    create: () => `/invitations`,
+    accept: (token: string) => `/invitations/${token}/accept`,
+    reject: (token: string) => `/invitations/${token}/reject`,
   },
 };
