@@ -11,6 +11,7 @@ export const API_ROUTES = {
     adherence: (userId: string, period: string) => `/users/${userId}/adherence?period=${period}`,
     notifications: (userId: string) => `/users/${userId}/notifications`,
     notificationRead: (userId: string, notifId: string) => `/users/${userId}/notifications/${notifId}/read`,
+    doseRecords: (userId: string) => `/users/${userId}/dose-records`,
     invitesPending: (userId: string) => `/users/${userId}/invites/pending`,
     invite: (userId: string) => `/users/${userId}/invite`,
   },
