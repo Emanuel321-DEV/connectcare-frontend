@@ -14,6 +14,11 @@ export const API_ROUTES = {
     doseRecords: (userId: string) => `/users/${userId}/dose-records`,
     invitesPending: (userId: string) => `/users/${userId}/invites/pending`,
     invite: (userId: string) => `/users/${userId}/invite`,
+    detail: (userId: string) => `/users/${userId}`,
+    // Pacientes vinculados a um cuidador (ver docs/api.yaml do backend).
+    charges: (caregiverId: string) => `/users/${caregiverId}/charges`,
+    // Cuidadores vinculados a um paciente (ver docs/api.yaml do backend).
+    caregivers: (patientId: string) => `/users/${patientId}/caregivers`,
   },
 
   prescriptions: {
@@ -31,7 +36,9 @@ export const API_ROUTES = {
   },
 
   patients: {
-    detail: (patientId: string) => `/patients/${patientId}`,
+    // Não existe endpoint /patients/{id} no backend; usamos GET /users/{id}
+    // (schema User) e compomos o restante do PatientDetail no frontend.
+    detail: (patientId: string) => `/users/${patientId}`,
   },
 
   invites: {
