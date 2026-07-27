@@ -70,12 +70,12 @@ export function useSchedule() {
         setSections(MOCK_SCHEDULE);
         return;
       }
-      const records = await apiClient.get<RawDoseRecord[]>(
+      const records = await apiClient.get<RawDoseRecord[] | null>(
         API_ROUTES.users.doseRecords(user?.id ?? ''),
         token ?? undefined
       );
       const dateStr = selectedDate.toISOString().split('T')[0];
-      const doses = records
+      const doses = (records ?? [])
         .filter((r) => r.scheduled_at.startsWith(dateStr))
         .map(toDoseItem);
       setSections(groupIntoSections(doses));

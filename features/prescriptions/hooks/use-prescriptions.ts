@@ -24,8 +24,9 @@ export function usePrescriptions() {
         return;
       }
       const active = filter === 'all' ? undefined : filter === 'active';
-      const response = await apiClient.get<Prescription[]>(API_ROUTES.prescriptions.list(user?.id ?? '', active), token ?? undefined);
-      setPrescriptions(response);
+      const response = await apiClient.get<Prescription[] | null>(API_ROUTES.prescriptions.list(user?.id ?? '', active), token ?? undefined);
+      // Backend retorna null (não []) quando o usuário não tem nenhuma prescrição.
+      setPrescriptions(response ?? []);
     } catch {
       setPrescriptions(MOCK_PRESCRIPTIONS);
     } finally {

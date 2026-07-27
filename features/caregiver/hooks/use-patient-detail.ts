@@ -71,11 +71,14 @@ function buildHistory(doseRecords: RawDoseRecord[]): PatientHistoryEntry[] {
 }
 
 async function buildPatientDetail(patientId: string, token?: string): Promise<PatientDetail> {
-  const [user, prescriptions, doseRecords] = await Promise.all([
+  const [user, rawPrescriptions, rawDoseRecords] = await Promise.all([
     apiClient.get<RawUser>(API_ROUTES.patients.detail(patientId), token),
-    apiClient.get<Prescription[]>(API_ROUTES.prescriptions.list(patientId), token),
-    apiClient.get<RawDoseRecord[]>(API_ROUTES.users.doseRecords(patientId), token),
+    apiClient.get<Prescription[] | null>(API_ROUTES.prescriptions.list(patientId), token),
+    apiClient.get<RawDoseRecord[] | null>(API_ROUTES.users.doseRecords(patientId), token),
   ]);
+  // Backend retorna null (não []) quando a lista está vazia.
+  const prescriptions = rawPrescriptions ?? [];
+  const doseRecords = rawDoseRecords ?? [];
 
   const taken = doseRecords.filter((r) => r.status === 'TAKEN').length;
   const finished = doseRecords.filter((r) => r.status === 'TAKEN' || r.status === 'MISSED').length;

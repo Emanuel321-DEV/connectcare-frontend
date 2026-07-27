@@ -75,11 +75,11 @@ export function useAdherence() {
         setReport({ ...MOCK_REPORT, period });
         return;
       }
-      const records = await apiClient.get<RawDoseRecord[]>(
+      const records = await apiClient.get<RawDoseRecord[] | null>(
         API_ROUTES.users.doseRecords(user?.id ?? ''),
         token ?? undefined
       );
-      setReport(buildReport(records, period));
+      setReport(buildReport(records ?? [], period));
     } catch {
       setReport({ ...MOCK_REPORT, period });
     } finally {

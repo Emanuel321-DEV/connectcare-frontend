@@ -56,11 +56,11 @@ export function usePatientHome() {
         setData(MOCK_PATIENT_HOME);
         return;
       }
-      const records = await apiClient.get<RawDoseRecord[]>(
+      const records = await apiClient.get<RawDoseRecord[] | null>(
         API_ROUTES.users.doseRecords(user?.id ?? ''),
         token ?? undefined
       );
-      setData(buildHomeData(records));
+      setData(buildHomeData(records ?? []));
     } catch {
       setData(MOCK_PATIENT_HOME);
     } finally {

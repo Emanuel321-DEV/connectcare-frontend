@@ -32,7 +32,7 @@ interface RawDoseRecord {
 async function buildPatientSummary(patient: RawUser, token?: string): Promise<PatientSummary> {
   let records: RawDoseRecord[] = [];
   try {
-    records = await apiClient.get<RawDoseRecord[]>(API_ROUTES.users.doseRecords(patient.id), token);
+    records = (await apiClient.get<RawDoseRecord[] | null>(API_ROUTES.users.doseRecords(patient.id), token)) ?? [];
   } catch {
     records = [];
   }
@@ -66,12 +66,12 @@ export function useCaregiverHome() {
         setPatients(MOCK_PATIENTS);
         return;
       }
-      const charges = await apiClient.get<RawUser[]>(
+      const charges = await apiClient.get<RawUser[] | null>(
         API_ROUTES.users.charges(user?.id ?? ''),
         token ?? undefined
       );
       const summaries = await Promise.all(
-        charges.map((patient) => buildPatientSummary(patient, token ?? undefined))
+        (charges ?? []).map((patient) => buildPatientSummary(patient, token ?? undefined))
       );
       setPatients(summaries);
     } catch {

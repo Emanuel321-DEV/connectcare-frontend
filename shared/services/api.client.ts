@@ -19,14 +19,19 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     headers['Authorization'] = `Bearer ${token}`;
   }
 
+  console.log('[apiClient] ->', method, `${BASE_URL}${path}`);
+
   const response = await fetch(`${BASE_URL}${path}`, {
     method,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
+  console.log('[apiClient] <-', response.status, `${BASE_URL}${path}`);
+
   if (!response.ok) {
     const errorBody = await response.json().catch(() => ({ message: 'Erro desconhecido' }));
+    console.log('[apiClient] erro:', JSON.stringify(errorBody));
     throw new Error((errorBody as { message?: string }).message ?? `Erro ${response.status}`);
   }
 
