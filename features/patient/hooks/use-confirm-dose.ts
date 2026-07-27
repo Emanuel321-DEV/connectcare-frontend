@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Alert } from 'react-native';
 import { router } from 'expo-router';
 import { apiClient } from '@/shared/services/api.client';
 import { API_ROUTES } from '@/shared/services/api.routes';
@@ -15,9 +16,12 @@ export function useConfirmDose(doseRecordId: string) {
       if (!USE_MOCK) {
         await apiClient.post(API_ROUTES.prescriptions.doseConfirm(doseRecordId), {}, token ?? undefined);
       }
-    } catch { /* silently fail */ }
-    setLoading(false);
-    router.back();
+      router.back();
+    } catch (err) {
+      Alert.alert('Erro ao confirmar dose', err instanceof Error ? err.message : 'Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function skipDose() {
@@ -26,9 +30,12 @@ export function useConfirmDose(doseRecordId: string) {
       if (!USE_MOCK) {
         await apiClient.post(API_ROUTES.prescriptions.doseSkip(doseRecordId), {}, token ?? undefined);
       }
-    } catch { /* silently fail */ }
-    setLoading(false);
-    router.back();
+      router.back();
+    } catch (err) {
+      Alert.alert('Erro ao registrar dose perdida', err instanceof Error ? err.message : 'Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return { loading, markAsTaken, skipDose };

@@ -46,11 +46,13 @@ function buildHomeData(records: RawDoseRecord[]): PatientHomeData {
 export function usePatientHome() {
   const [data, setData] = useState<PatientHomeData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       if (USE_MOCK) {
         setData(MOCK_PATIENT_HOME);
@@ -61,8 +63,10 @@ export function usePatientHome() {
         token ?? undefined
       );
       setData(buildHomeData(records ?? []));
-    } catch {
-      setData(MOCK_PATIENT_HOME);
+    } catch (err) {
+      // Erro real do backend — não mascarar com dado mockado.
+      setData(null);
+      setError(err instanceof Error ? err.message : 'Não foi possível carregar seus dados.');
     } finally {
       setLoading(false);
     }
@@ -70,5 +74,5 @@ export function usePatientHome() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  return { data, loading, refetch: fetchData, user };
+  return { data, loading, error, refetch: fetchData, user };
 }

@@ -15,7 +15,7 @@ import { AccountMenu } from '@/shared/components/account-menu';
 import type { DoseItem } from '../types/schedule.types';
 
 export default function PatientHomeScreen() {
-  const { data, loading, user } = usePatientHome();
+  const { data, loading, error, user } = usePatientHome();
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -56,8 +56,15 @@ export default function PatientHomeScreen() {
           </Text>
         </View>
 
-        {loading || !data ? (
+        {loading ? (
           <ActivityIndicator size="large" color="#004E9F" style={{ marginTop: 40 }} />
+        ) : error || !data ? (
+          <View className="items-center py-16" style={{ gap: 8 }}>
+            <Ionicons name="alert-circle-outline" size={48} color="#EA4335" />
+            <Text className="text-[#EA4335] text-base text-center px-6">
+              {error ?? 'Não foi possível carregar seus dados.'}
+            </Text>
+          </View>
         ) : (
           <View style={{ gap: 20 }}>
             {/* Adherence card */}

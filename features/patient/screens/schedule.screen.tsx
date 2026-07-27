@@ -14,7 +14,7 @@ import type { DoseItem, ScheduleSection } from '../types/schedule.types';
 const WEEK_DAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
 export default function ScheduleScreen() {
-  const { sections, loading, selectedDate, setSelectedDate } = useSchedule();
+  const { sections, loading, error, selectedDate, setSelectedDate } = useSchedule();
 
   const today = new Date();
   const weekDates = Array.from({ length: 7 }, (_, i) => {
@@ -68,6 +68,11 @@ export default function ScheduleScreen() {
 
         {loading ? (
           <ActivityIndicator size="large" color="#004E9F" style={{ marginTop: 40 }} />
+        ) : error ? (
+          <View className="items-center py-16" style={{ gap: 8 }}>
+            <Ionicons name="alert-circle-outline" size={48} color="#EA4335" />
+            <Text className="text-[#EA4335] text-base text-center px-6">{error}</Text>
+          </View>
         ) : sections.length === 0 ? (
           <View className="items-center py-16" style={{ gap: 8 }}>
             <Ionicons name="calendar-outline" size={48} color="#C1C6D5" />

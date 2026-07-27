@@ -65,11 +65,13 @@ export function useAdherence() {
   const [report, setReport] = useState<AdherenceReport | null>(null);
   const [period, setPeriod] = useState<ReportPeriod>('7d');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       if (USE_MOCK) {
         setReport({ ...MOCK_REPORT, period });
@@ -80,8 +82,10 @@ export function useAdherence() {
         token ?? undefined
       );
       setReport(buildReport(records ?? [], period));
-    } catch {
-      setReport({ ...MOCK_REPORT, period });
+    } catch (err) {
+      // Erro real do backend — não mascarar com dado mockado.
+      setReport(null);
+      setError(err instanceof Error ? err.message : 'Não foi possível carregar o relatório.');
     } finally {
       setLoading(false);
     }
@@ -89,5 +93,5 @@ export function useAdherence() {
 
   useEffect(() => { fetchReport(); }, [fetchReport]);
 
-  return { report, period, setPeriod, loading };
+  return { report, period, setPeriod, loading, error };
 }

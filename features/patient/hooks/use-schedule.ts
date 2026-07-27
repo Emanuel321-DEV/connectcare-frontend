@@ -59,12 +59,14 @@ function groupIntoSections(doses: DoseItem[]): ScheduleSection[] {
 export function useSchedule() {
   const [sections, setSections] = useState<ScheduleSection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
 
   const fetchSchedule = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       if (USE_MOCK) {
         setSections(MOCK_SCHEDULE);
@@ -79,8 +81,10 @@ export function useSchedule() {
         .filter((r) => r.scheduled_at.startsWith(dateStr))
         .map(toDoseItem);
       setSections(groupIntoSections(doses));
-    } catch {
-      setSections(MOCK_SCHEDULE);
+    } catch (err) {
+      // Erro real do backend — não mascarar com dado mockado.
+      setSections([]);
+      setError(err instanceof Error ? err.message : 'Não foi possível carregar o cronograma.');
     } finally {
       setLoading(false);
     }
@@ -88,5 +92,5 @@ export function useSchedule() {
 
   useEffect(() => { fetchSchedule(); }, [fetchSchedule]);
 
-  return { sections, loading, selectedDate, setSelectedDate, refetch: fetchSchedule };
+  return { sections, loading, error, selectedDate, setSelectedDate, refetch: fetchSchedule };
 }

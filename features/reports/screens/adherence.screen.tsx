@@ -16,7 +16,7 @@ const PERIODS: { key: ReportPeriod; label: string }[] = [
 ];
 
 export default function AdherenceReportScreen() {
-  const { report, period, setPeriod, loading } = useAdherence();
+  const { report, period, setPeriod, loading, error } = useAdherence();
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
@@ -44,8 +44,15 @@ export default function AdherenceReportScreen() {
           ))}
         </View>
 
-        {loading || !report ? (
+        {loading ? (
           <ActivityIndicator size="large" color="#004E9F" style={{ marginTop: 60 }} />
+        ) : error || !report ? (
+          <View className="items-center py-16" style={{ gap: 8 }}>
+            <Ionicons name="alert-circle-outline" size={48} color="#EA4335" />
+            <Text className="text-[#EA4335] text-base text-center px-6">
+              {error ?? 'Não foi possível carregar o relatório.'}
+            </Text>
+          </View>
         ) : (
           <View style={{ gap: 24 }}>
             {/* Overall */}
