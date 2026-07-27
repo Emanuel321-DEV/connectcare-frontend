@@ -4,19 +4,18 @@ import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
-interface RawUser {
-  id: string;
-  name: string;
-  email: string;
+interface CaregiverInvitationResponse {
+  accept_url: string;
 }
 
 export function useGenerateInvite() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Guarda o email pra quem o convite foi enviado com sucesso.
+  // Link que o paciente pode copiar/compartilhar com o cuidador — não há
+  // envio automático por email/SMS/push (sem SMTP configurado no backend).
+  const [acceptUrl, setAcceptUrl] = useState<string | null>(null);
   const [sentTo, setSentTo] = useState<string | null>(null);
-  const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
 
   async function sendInvite() {
@@ -31,28 +30,22 @@ export function useGenerateInvite() {
 
     try {
       if (USE_MOCK) {
+        setAcceptUrl('https://careconnect.app/accept-invite?token=mock-token');
         setSentTo(trimmed);
         setEmail('');
         return;
       }
 
-      // Não existe endpoint de busca por email no backend — buscamos todos os
-      // usuários e filtramos no cliente. Dívida técnica conhecida: expõe a
-      // lista completa de usuários no dispositivo durante a busca.
-      const allUsers = await apiClient.get<RawUser[] | null>(API_ROUTES.users.list(), token ?? undefined);
-      const found = (allUsers ?? []).find((u) => u.email.toLowerCase() === trimmed.toLowerCase());
-
-      if (!found) {
-        setError('Nenhum usuário encontrado com esse email. Peça para o cuidador se cadastrar no CareConnect primeiro.');
-        return;
-      }
-
-      await apiClient.post(
+      // O backend busca o cuidador pelo email e deriva o elderly_id do
+      // próprio token de quem está logado — não precisamos mais buscar
+      // usuários manualmente.
+      const response = await apiClient.post<CaregiverInvitationResponse>(
         API_ROUTES.invites.create(),
-        { elderly_id: user?.id ?? '', caregiver_id: found.id },
+        { caregiver_email: trimmed },
         token ?? undefined
       );
 
+      setAcceptUrl(response.accept_url);
       setSentTo(trimmed);
       setEmail('');
     } catch (err) {
@@ -64,8 +57,9 @@ export function useGenerateInvite() {
 
   function reset() {
     setSentTo(null);
+    setAcceptUrl(null);
     setError(null);
   }
 
-  return { email, setEmail, loading, error, sentTo, sendInvite, reset };
+  return { email, setEmail, loading, error, sentTo, acceptUrl, sendInvite, reset };
 }

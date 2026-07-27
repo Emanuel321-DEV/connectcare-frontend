@@ -1,6 +1,9 @@
+import { useState } from 'react';
 import {
   ActivityIndicator,
+  Clipboard,
   ScrollView,
+  Share,
   Text,
   TextInput,
   TouchableOpacity,
@@ -13,8 +16,21 @@ import { useGenerateInvite } from '../hooks/use-generate-invite';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
 export default function GenerateInviteScreen() {
-  const { email, setEmail, loading, error, sentTo, sendInvite, reset } = useGenerateInvite();
+  const { email, setEmail, loading, error, sentTo, acceptUrl, sendInvite, reset } = useGenerateInvite();
   const user = useAuthStore((s) => s.user);
+  const [copied, setCopied] = useState(false);
+
+  function copyLink() {
+    if (!acceptUrl) return;
+    Clipboard.setString(acceptUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  function shareLink() {
+    if (!acceptUrl) return;
+    Share.share({ message: `Use este link para se conectar comigo no CareConnect: ${acceptUrl}` });
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]">
@@ -47,11 +63,31 @@ export default function GenerateInviteScreen() {
           <View className="bg-white border-2 border-[#C1C6D5] rounded-xl items-center p-8" style={{ gap: 16 }}>
             <Ionicons name="checkmark-circle" size={56} color="#34A853" />
             <Text className="text-[#1A1C1E] text-lg font-semibold text-center">
-              Convite enviado para {sentTo}
+              Convite criado para {sentTo}
             </Text>
             <Text className="text-[#414753] text-base text-center">
-              Aguardando o cuidador aceitar o convite.
+              Não enviamos email automaticamente. Copie o link abaixo e mande pro cuidador (WhatsApp, pessoalmente, etc.).
             </Text>
+
+            <View className="w-full" style={{ gap: 8 }}>
+              <TouchableOpacity
+                className="bg-[#004E9F] rounded-xl flex-row items-center justify-center"
+                style={{ height: 48, gap: 8 }}
+                onPress={copyLink}
+              >
+                <Ionicons name={copied ? 'checkmark' : 'copy-outline'} size={18} color="white" />
+                <Text className="text-white font-semibold text-base">{copied ? 'Copiado!' : 'Copiar link'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="border-2 border-[#004E9F] rounded-xl flex-row items-center justify-center"
+                style={{ height: 48, gap: 8 }}
+                onPress={shareLink}
+              >
+                <Ionicons name="share-outline" size={18} color="#004E9F" />
+                <Text className="text-[#004E9F] font-semibold text-base">Compartilhar link</Text>
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
               className="border-2 border-[#004E9F] rounded-xl items-center justify-center"
               style={{ height: 48, paddingHorizontal: 24 }}
