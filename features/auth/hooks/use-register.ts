@@ -41,8 +41,14 @@ export function useRegister() {
         });
       } else {
         const payload: RegisterRequest = { name: name.trim(), email: email.trim(), phone: phone.trim(), password };
-        const response = await apiClient.post<LoginResponse>(API_ROUTES.auth.register, payload);
-        setAuth(response.token, response.user);
+        await apiClient.post(API_ROUTES.auth.register, payload);
+        // /auth/register não retorna token (bug conhecido da API), então
+        // logamos imediatamente depois pra obter um token válido de verdade.
+        const loginResponse = await apiClient.post<LoginResponse>(API_ROUTES.auth.login, {
+          email: email.trim(),
+          password,
+        });
+        setAuth(loginResponse.token, loginResponse.user);
       }
       router.replace('/(tabs)');
     } catch (err) {
