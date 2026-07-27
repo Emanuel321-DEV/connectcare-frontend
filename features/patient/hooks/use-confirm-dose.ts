@@ -5,7 +5,7 @@ import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
-export function useConfirmDose(_doseId: string, _prescriptionId: string) {
+export function useConfirmDose(doseRecordId: string) {
   const [loading, setLoading] = useState(false);
   const token = useAuthStore((s) => s.token);
 
@@ -13,7 +13,7 @@ export function useConfirmDose(_doseId: string, _prescriptionId: string) {
     setLoading(true);
     try {
       if (!USE_MOCK) {
-        await apiClient.post(API_ROUTES.prescriptions.doseConfirm(_prescriptionId, _doseId), {}, token ?? undefined);
+        await apiClient.post(API_ROUTES.prescriptions.doseConfirm(doseRecordId), {}, token ?? undefined);
       }
     } catch { /* silently fail */ }
     setLoading(false);
@@ -24,7 +24,7 @@ export function useConfirmDose(_doseId: string, _prescriptionId: string) {
     setLoading(true);
     try {
       if (!USE_MOCK) {
-        await apiClient.post(API_ROUTES.prescriptions.doseSkip(_prescriptionId, _doseId), {}, token ?? undefined);
+        await apiClient.post(API_ROUTES.prescriptions.doseSkip(doseRecordId), {}, token ?? undefined);
       }
     } catch { /* silently fail */ }
     setLoading(false);
