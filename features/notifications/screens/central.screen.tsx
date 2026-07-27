@@ -18,7 +18,7 @@ const TYPE_CONFIG: Record<NotificationType, { color: string; bg: string; icon: s
 };
 
 export default function NotificationsCentralScreen() {
-  const { notifications, loading, markAsRead, unreadCount } = useNotifications();
+  const { notifications, loading, error, markAsRead, unreadCount } = useNotifications();
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
@@ -40,6 +40,11 @@ export default function NotificationsCentralScreen() {
       <ScrollView className="flex-1" contentContainerStyle={{ paddingVertical: 8 }} showsVerticalScrollIndicator={false}>
         {loading ? (
           <ActivityIndicator size="large" color="#004E9F" style={{ marginTop: 60 }} />
+        ) : error ? (
+          <View className="items-center py-20" style={{ gap: 8 }}>
+            <Ionicons name="alert-circle-outline" size={48} color="#EA4335" />
+            <Text className="text-[#EA4335] text-base text-center px-6">{error}</Text>
+          </View>
         ) : notifications.length === 0 ? (
           <View className="items-center py-20" style={{ gap: 8 }}>
             <Ionicons name="notifications-off-outline" size={48} color="#C1C6D5" />

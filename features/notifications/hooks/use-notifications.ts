@@ -9,20 +9,26 @@ import type { Notification } from '../types/notification.types';
 export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
 
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       if (USE_MOCK) {
         setNotifications(MOCK_NOTIFICATIONS);
         return;
       }
-      const response = await apiClient.get<Notification[]>(API_ROUTES.users.notifications(user?.id ?? ''), token ?? undefined);
-      setNotifications(response);
-    } catch {
-      setNotifications(MOCK_NOTIFICATIONS);
+      // Não existe endpoint de listagem de notificações no backend (só um
+      // toggle on/off em POST /users/{id}/notifications) — esta chamada
+      // sempre falha hoje. Erro real, não mascarar com mock.
+      const response = await apiClient.get<Notification[] | null>(API_ROUTES.users.notifications(user?.id ?? ''), token ?? undefined);
+      setNotifications(response ?? []);
+    } catch (err) {
+      setNotifications([]);
+      setError(err instanceof Error ? err.message : 'Não foi possível carregar as notificações.');
     } finally {
       setLoading(false);
     }
@@ -39,5 +45,5 @@ export function useNotifications() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  return { notifications, loading, markAsRead, unreadCount };
+  return { notifications, loading, error, markAsRead, unreadCount };
 }
