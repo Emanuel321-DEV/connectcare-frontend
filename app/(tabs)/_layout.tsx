@@ -43,13 +43,6 @@ export default function PatientTabLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="document-text-outline" size={size} color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="notifications"
-        options={{
-          title: 'Notificações',
-          tabBarIcon: ({ color, size }) => <Ionicons name="notifications-outline" size={size} color={color} />,
-        }}
-      />
     </Tabs>
   );
 }

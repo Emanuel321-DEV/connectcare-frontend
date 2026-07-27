@@ -9,8 +9,6 @@ export const API_ROUTES = {
     schedule: (userId: string, date: string) => `/users/${userId}/schedule?date=${date}`,
     patients: (userId: string) => `/users/${userId}/patients`,
     adherence: (userId: string, period: string) => `/users/${userId}/adherence?period=${period}`,
-    notifications: (userId: string) => `/users/${userId}/notifications`,
-    notificationRead: (userId: string, notifId: string) => `/users/${userId}/notifications/${notifId}/read`,
     doseRecords: (userId: string) => `/users/${userId}/dose-records`,
     detail: (userId: string) => `/users/${userId}`,
     // Pacientes vinculados a um cuidador (ver docs/api.yaml do backend).
