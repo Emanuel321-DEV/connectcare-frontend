@@ -51,7 +51,10 @@ export function useRegister() {
           email: email.trim(),
           password,
         });
-        setAuth(loginResponse.token, loginResponse.user);
+        // /auth/login não devolve o campo role (bug conhecido da API) — como
+        // acabamos de registrar com backendRole, usamos esse valor direto em
+        // vez de confiar no que (não) vem na resposta do login.
+        setAuth(loginResponse.token, { ...loginResponse.user, role: backendRole });
       }
       router.replace(backendRole === 'CAREGIVER' ? '/(caregiver)' : '/(tabs)');
     } catch (err) {

@@ -5,7 +5,7 @@ import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { MOCK_AUTH_RESPONSE } from '@/shared/mocks';
 import { useAuthStore } from '../store/auth.store';
-import type { LoginResponse } from '../types/auth.types';
+import type { LoginResponse, User } from '../types/auth.types';
 
 export function useLogin() {
   const [email, setEmail] = useState('');
@@ -36,6 +36,13 @@ export function useLogin() {
           password,
         });
         user = response.user;
+        // /auth/login não devolve o campo role (bug conhecido da API, diferente
+        // de GET /users/{id}) — buscamos o usuário completo pra saber o papel real.
+        if (!user.role) {
+          try {
+            user = await apiClient.get<User>(API_ROUTES.users.detail(user.id), response.token);
+          } catch { /* mantém o user do login mesmo sem role, cai no fallback abaixo */ }
+        }
         setAuth(response.token, user);
       }
       router.replace(user.role === 'CAREGIVER' ? '/(caregiver)' : '/(tabs)');
