@@ -26,16 +26,19 @@ export function useLogin() {
     setError(null);
 
     try {
+      let user;
       if (USE_MOCK) {
-        setAuth(MOCK_AUTH_RESPONSE.token, { ...MOCK_AUTH_RESPONSE.user, email: email.trim() });
+        user = { ...MOCK_AUTH_RESPONSE.user, email: email.trim() };
+        setAuth(MOCK_AUTH_RESPONSE.token, user);
       } else {
         const response = await apiClient.post<LoginResponse>(API_ROUTES.auth.login, {
           email: email.trim(),
           password,
         });
-        setAuth(response.token, response.user);
+        user = response.user;
+        setAuth(response.token, user);
       }
-      router.replace('/(tabs)');
+      router.replace(user.role === 'CAREGIVER' ? '/(caregiver)' : '/(tabs)');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao fazer login.');
     } finally {

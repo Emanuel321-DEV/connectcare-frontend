@@ -32,15 +32,18 @@ export function useRegister() {
     setError(null);
 
     try {
+      const backendRole = role === 'caregiver' ? 'CAREGIVER' : 'ELDERLY';
+
       if (USE_MOCK) {
         setAuth(MOCK_AUTH_RESPONSE.token, {
           ...MOCK_AUTH_RESPONSE.user,
           name: name.trim(),
           email: email.trim(),
           phone: phone.trim(),
+          role: backendRole,
         });
       } else {
-        const payload: RegisterRequest = { name: name.trim(), email: email.trim(), phone: phone.trim(), password };
+        const payload: RegisterRequest = { name: name.trim(), email: email.trim(), phone: phone.trim(), password, role: backendRole };
         await apiClient.post(API_ROUTES.auth.register, payload);
         // /auth/register não retorna token (bug conhecido da API), então
         // logamos imediatamente depois pra obter um token válido de verdade.
@@ -50,7 +53,7 @@ export function useRegister() {
         });
         setAuth(loginResponse.token, loginResponse.user);
       }
-      router.replace('/(tabs)');
+      router.replace(backendRole === 'CAREGIVER' ? '/(caregiver)' : '/(tabs)');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar conta.');
     } finally {
