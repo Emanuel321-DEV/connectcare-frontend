@@ -23,14 +23,12 @@ export const API_ROUTES = {
     detail: (id: string) => `/prescriptions/${id}`,
     activate: (id: string) => `/prescriptions/${id}/activate`,
     deactivate: (id: string) => `/prescriptions/${id}/deactivate`,
-    doseConfirm: (prescriptionId: string, doseId: string) =>
-      `/prescriptions/${prescriptionId}/doses/${doseId}/confirm`,
-    doseSkip: (prescriptionId: string, doseId: string) =>
-      `/prescriptions/${prescriptionId}/doses/${doseId}/skip`,
+    doseConfirm: (doseRecordId: string) => `/dose-records/${doseRecordId}/confirm`,
+    doseSkip: (doseRecordId: string) => `/dose-records/${doseRecordId}/miss`,
   },
 
   patients: {
-    detail: (patientId: string) => `/patients/${patientId}`,
+    detail: (patientId: string) => `/users/${patientId}`,
   },
 
   invites: {

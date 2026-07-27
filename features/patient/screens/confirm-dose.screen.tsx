@@ -18,7 +18,7 @@ export default function ConfirmDoseScreen() {
     scheduledTime: string;
   }>();
 
-  const { loading, markAsTaken, skipDose } = useConfirmDose(doseId ?? '', prescriptionId ?? '');
+  const { loading, markAsTaken, skipDose } = useConfirmDose(doseId ?? '');
 
   const now = new Date();
   const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
