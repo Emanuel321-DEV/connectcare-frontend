@@ -56,11 +56,13 @@ async function buildPatientSummary(patient: RawUser, token?: string): Promise<Pa
 export function useCaregiverHome() {
   const [patients, setPatients] = useState<PatientSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
 
   const fetchPatients = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       if (USE_MOCK) {
         setPatients(MOCK_PATIENTS);
@@ -74,8 +76,10 @@ export function useCaregiverHome() {
         (charges ?? []).map((patient) => buildPatientSummary(patient, token ?? undefined))
       );
       setPatients(summaries);
-    } catch {
-      setPatients(MOCK_PATIENTS);
+    } catch (err) {
+      // Erro real do backend — não mascarar com dado mockado.
+      setPatients([]);
+      setError(err instanceof Error ? err.message : 'Não foi possível carregar seus pacientes.');
     } finally {
       setLoading(false);
     }
@@ -83,5 +87,5 @@ export function useCaregiverHome() {
 
   useEffect(() => { fetchPatients(); }, [fetchPatients]);
 
-  return { patients, loading, user, refetch: fetchPatients };
+  return { patients, loading, error, user, refetch: fetchPatients };
 }

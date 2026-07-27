@@ -13,12 +13,14 @@ export function usePrescriptions() {
   const [filter, setFilter] = useState<Filter>('all');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
 
   const fetchPrescriptions = useCallback(async () => {
     setLoading(true);
     try {
+      setError(null);
       if (USE_MOCK) {
         setPrescriptions(MOCK_PRESCRIPTIONS);
         return;
@@ -27,8 +29,9 @@ export function usePrescriptions() {
       const response = await apiClient.get<Prescription[] | null>(API_ROUTES.prescriptions.list(user?.id ?? '', active), token ?? undefined);
       // Backend retorna null (não []) quando o usuário não tem nenhuma prescrição.
       setPrescriptions(response ?? []);
-    } catch {
-      setPrescriptions(MOCK_PRESCRIPTIONS);
+    } catch (err) {
+      setPrescriptions([]);
+      setError(err instanceof Error ? err.message : 'Não foi possível carregar as prescrições.');
     } finally {
       setLoading(false);
     }
@@ -40,5 +43,5 @@ export function usePrescriptions() {
     .filter((p) => filter === 'all' || (filter === 'active' ? p.active : !p.active))
     .filter((p) => p.medicament.name.toLowerCase().includes(search.toLowerCase()));
 
-  return { prescriptions: filtered, filter, setFilter, search, setSearch, loading, refetch: fetchPrescriptions };
+  return { prescriptions: filtered, filter, setFilter, search, setSearch, loading, error, refetch: fetchPrescriptions };
 }

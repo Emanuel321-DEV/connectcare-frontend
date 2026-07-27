@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { usePatientDetail } from '../hooks/use-patient-detail';
 
 export default function PatientDetailScreen({ patientId }: { patientId: string }) {
-  const { patient, loading } = usePatientDetail(patientId);
+  const { patient, loading, error } = usePatientDetail(patientId);
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
@@ -17,9 +17,16 @@ export default function PatientDetailScreen({ patientId }: { patientId: string }
         <Text className="text-[#004E9F] text-base font-semibold">Detalhes do Paciente</Text>
       </View>
 
-      {loading || !patient ? (
+      {loading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#004E9F" />
+        </View>
+      ) : error || !patient ? (
+        <View className="items-center py-16" style={{ gap: 8 }}>
+          <Ionicons name="alert-circle-outline" size={48} color="#EA4335" />
+          <Text className="text-[#EA4335] text-base text-center px-6">
+            {error ?? 'Não foi possível carregar os dados do paciente.'}
+          </Text>
         </View>
       ) : (
         <ScrollView

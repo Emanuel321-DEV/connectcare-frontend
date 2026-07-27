@@ -14,7 +14,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { AccountMenu } from '@/shared/components/account-menu';
 
 export default function CaregiverHomeScreen() {
-  const { patients, loading, user } = useCaregiverHome();
+  const { patients, loading, error, user } = useCaregiverHome();
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -64,6 +64,13 @@ export default function CaregiverHomeScreen() {
 
         {loading ? (
           <ActivityIndicator size="large" color="#004E9F" style={{ marginTop: 40 }} />
+        ) : error ? (
+          <View className="items-center py-16" style={{ gap: 8 }}>
+            <Ionicons name="alert-circle-outline" size={48} color="#EA4335" />
+            <Text className="text-[#EA4335] text-base text-center px-6">
+              {error ?? 'Não foi possível carregar seus pacientes.'}
+            </Text>
+          </View>
         ) : (
           <View style={{ gap: 16 }}>
             {patients.map((patient) => (

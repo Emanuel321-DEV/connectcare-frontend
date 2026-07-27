@@ -19,7 +19,7 @@ const FILTERS = [
 ] as const;
 
 export default function PrescriptionsListScreen() {
-  const { prescriptions, filter, setFilter, search, setSearch, loading } = usePrescriptions();
+  const { prescriptions, filter, setFilter, search, setSearch, loading, error } = usePrescriptions();
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
@@ -60,6 +60,13 @@ export default function PrescriptionsListScreen() {
       <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 20, gap: 12 }} showsVerticalScrollIndicator={false}>
         {loading ? (
           <ActivityIndicator size="large" color="#004E9F" style={{ marginTop: 40 }} />
+        ) : error ? (
+          <View className="items-center py-16" style={{ gap: 8 }}>
+            <Ionicons name="alert-circle-outline" size={48} color="#EA4335" />
+            <Text className="text-[#EA4335] text-base text-center px-6">
+              {error ?? 'Não foi possível carregar as prescrições.'}
+            </Text>
+          </View>
         ) : prescriptions.length === 0 ? (
           <View className="items-center py-16" style={{ gap: 8 }}>
             <Ionicons name="document-outline" size={48} color="#C1C6D5" />

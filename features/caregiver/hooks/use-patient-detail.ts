@@ -99,10 +99,12 @@ async function buildPatientDetail(patientId: string, token?: string): Promise<Pa
 export function usePatientDetail(patientId: string) {
   const [patient, setPatient] = useState<PatientDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const token = useAuthStore((s) => s.token);
 
   const fetchPatient = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       if (USE_MOCK) {
         setPatient(MOCK_PATIENT_DETAIL);
@@ -110,8 +112,10 @@ export function usePatientDetail(patientId: string) {
       }
       const detail = await buildPatientDetail(patientId, token ?? undefined);
       setPatient(detail);
-    } catch {
-      setPatient(MOCK_PATIENT_DETAIL);
+    } catch (err) {
+      // Erro real do backend — não mascarar com dado mockado.
+      setPatient(null);
+      setError(err instanceof Error ? err.message : 'Não foi possível carregar os dados do paciente.');
     } finally {
       setLoading(false);
     }
@@ -119,5 +123,5 @@ export function usePatientDetail(patientId: string) {
 
   useEffect(() => { fetchPatient(); }, [fetchPatient]);
 
-  return { patient, loading };
+  return { patient, loading, error };
 }
