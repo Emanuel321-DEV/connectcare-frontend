@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -9,14 +10,30 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { usePatientHome } from '../hooks/use-patient-home';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import type { DoseItem } from '../types/schedule.types';
 
 export default function PatientHomeScreen() {
   const { data, loading, user } = usePatientHome();
+  const clearAuth = useAuthStore((s) => s.clearAuth);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
   const firstName = user?.name?.split(' ')[0] ?? 'Paciente';
+
+  function handleAvatarPress() {
+    Alert.alert(user?.name ?? 'Conta', undefined, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Sair',
+        style: 'destructive',
+        onPress: () => {
+          clearAuth();
+          router.replace('/(auth)/login');
+        },
+      },
+    ]);
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
@@ -27,9 +44,12 @@ export default function PatientHomeScreen() {
           <TouchableOpacity className="w-10 h-10 items-center justify-center" onPress={() => router.push('/invite')}>
             <Ionicons name="person-add-outline" size={22} color="#004E9F" />
           </TouchableOpacity>
-          <View className="w-9 h-9 rounded-full border-2 border-[#004E9F] bg-[#D7E3FF] items-center justify-center">
+          <TouchableOpacity
+            className="w-9 h-9 rounded-full border-2 border-[#004E9F] bg-[#D7E3FF] items-center justify-center"
+            onPress={handleAvatarPress}
+          >
             <Text className="text-[#004E9F] font-bold text-sm">{user?.name?.charAt(0).toUpperCase() ?? 'P'}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
 
