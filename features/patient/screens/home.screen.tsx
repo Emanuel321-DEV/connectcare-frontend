@@ -1,38 +1,31 @@
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { usePatientHome } from '../hooks/use-patient-home';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { AccountMenu } from '@/shared/components/account-menu';
 import type { DoseItem } from '../types/schedule.types';
 
 export default function PatientHomeScreen() {
   const { data, loading, user } = usePatientHome();
   const clearAuth = useAuthStore((s) => s.clearAuth);
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
   const firstName = user?.name?.split(' ')[0] ?? 'Paciente';
 
-  function handleAvatarPress() {
-    Alert.alert(user?.name ?? 'Conta', undefined, [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Sair',
-        style: 'destructive',
-        onPress: () => {
-          clearAuth();
-          router.replace('/(auth)/login');
-        },
-      },
-    ]);
+  function handleLogout() {
+    clearAuth();
+    router.replace('/(auth)/login');
   }
 
   return (
@@ -46,7 +39,7 @@ export default function PatientHomeScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             className="w-9 h-9 rounded-full border-2 border-[#004E9F] bg-[#D7E3FF] items-center justify-center"
-            onPress={handleAvatarPress}
+            onPress={() => setMenuVisible(true)}
           >
             <Text className="text-[#004E9F] font-bold text-sm">{user?.name?.charAt(0).toUpperCase() ?? 'P'}</Text>
           </TouchableOpacity>
@@ -129,6 +122,15 @@ export default function PatientHomeScreen() {
           </View>
         )}
       </ScrollView>
+
+      <AccountMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        userName={user?.name ?? 'Paciente'}
+        userEmail={user?.email}
+        accentColor="#004E9F"
+        onLogout={handleLogout}
+      />
     </SafeAreaView>
   );
 }
