@@ -42,5 +42,7 @@ app-example
 /ios
 /android
 
-google-services.json
-GoogleService-Info.plist
+# google-services.json e GoogleService-Info.plist NÃO são segredos sensíveis
+# (Firebase confirma que a api_key desses arquivos é pública por design).
+# São versionados de propósito para que o EAS Build consiga empacotá-los —
+# o EAS só sobe arquivos rastreados pelo Git.
