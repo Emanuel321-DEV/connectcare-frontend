@@ -82,14 +82,6 @@ export default function ScheduleScreen() {
             <ScheduleSectionView key={section.label} section={section} />
           ))
         )}
-
-        <TouchableOpacity
-          className="border-2 border-[#004E9F] rounded-xl items-center justify-center"
-          style={{ height: 48 }}
-          activeOpacity={0.8}
-        >
-          <Text className="text-[#004E9F] font-semibold text-base">Ver Agenda Completa</Text>
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
