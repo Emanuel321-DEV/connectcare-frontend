@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { apiClient } from '@/shared/services/api.client';
 import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
@@ -86,6 +87,12 @@ export function useCaregiverHome() {
   }, [user?.id, token]);
 
   useEffect(() => { fetchPatients(); }, [fetchPatients]);
+
+  // Refaz a busca sempre que a tela ganha foco (ex: ao voltar de outra tela),
+  // já que o efeito de mount não roda de novo nesse caso e o estado ficaria desatualizado.
+  useFocusEffect(
+    useCallback(() => { fetchPatients(); }, [fetchPatients])
+  );
 
   return { patients, loading, error, user, refetch: fetchPatients };
 }
