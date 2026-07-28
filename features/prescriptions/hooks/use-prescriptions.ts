@@ -41,7 +41,10 @@ export function usePrescriptions() {
 
   const filtered = prescriptions
     .filter((p) => filter === 'all' || (filter === 'active' ? p.active : !p.active))
-    .filter((p) => p.medicament.name.toLowerCase().includes(search.toLowerCase()));
+    .filter((p) =>
+      search.trim() === '' ||
+      p.medicaments.some((m) => m.name.toLowerCase().includes(search.toLowerCase()))
+    );
 
   return { prescriptions: filtered, filter, setFilter, search, setSearch, loading, error, refetch: fetchPrescriptions };
 }

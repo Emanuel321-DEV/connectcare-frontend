@@ -83,6 +83,7 @@ export default function PrescriptionsListScreen() {
 }
 
 function PrescriptionCard({ prescription: p, onPress }: { prescription: Prescription; onPress: () => void }) {
+  const [first, ...rest] = p.medicaments;
   return (
     <TouchableOpacity
       className="bg-white border-2 border-[#C1C6D5] rounded-xl p-5 flex-row items-center justify-between"
@@ -95,10 +96,12 @@ function PrescriptionCard({ prescription: p, onPress }: { prescription: Prescrip
         </View>
         <View className="flex-1" style={{ gap: 3 }}>
           <Text style={{ fontSize: 16, fontWeight: '700', color: '#1A1C1E' }} numberOfLines={1}>
-            {p.medicament.name}
+            {first ? first.name : 'Sem medicamentos'}
+            {rest.length > 0 ? ` +${rest.length}` : ''}
           </Text>
-          <Text className="text-[#414753] text-sm">{p.medicament.dosage} · {p.medicament.time.join(', ')}</Text>
-          <Text className="text-[#9AA0A6] text-xs">{p.medicName}</Text>
+          {first && (
+            <Text className="text-[#414753] text-sm">{first.dosage} · {first.time.join(', ')}</Text>
+          )}
         </View>
       </View>
       <View className="flex-row items-center" style={{ gap: 10 }}>

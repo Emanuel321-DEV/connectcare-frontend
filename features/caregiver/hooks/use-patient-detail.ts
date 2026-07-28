@@ -48,10 +48,12 @@ function formatHistoryDate(isoDate: string): string {
 function buildPrescriptions(prescriptions: Prescription[], doseRecords: RawDoseRecord[]): PatientPrescription[] {
   return prescriptions.map((p) => {
     const recentMissed = doseRecords.some((r) => r.prescription_id === p.id && r.status === 'MISSED');
+    const names = p.medicaments.map((m) => m.name).join(', ');
+    const schedule = p.medicaments.flatMap((m) => m.time).join(', ');
     return {
       id: p.id,
-      medication: `${p.medicament.name} ${p.medicament.dosage}`.trim(),
-      schedule: p.medicament.time.join(', '),
+      medication: names || 'Sem medicamentos',
+      schedule,
       status: recentMissed ? 'alert' : 'ok',
     };
   });
