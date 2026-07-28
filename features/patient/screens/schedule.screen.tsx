@@ -29,9 +29,8 @@ export default function ScheduleScreen() {
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
       {/* Header */}
-      <View className="bg-[#F9F9FB] border-b-2 border-[#C1C6D5] h-12 flex-row items-center justify-between px-5">
+      <View className="bg-[#F9F9FB] border-b-2 border-[#C1C6D5] h-12 flex-row items-center px-5">
         <Text className="text-[#004E9F] text-base font-semibold">CareConnect</Text>
-        <Ionicons name="notifications-outline" size={22} color="#004E9F" />
       </View>
 
       {/* Week selector */}
