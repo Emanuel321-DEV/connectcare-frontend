@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSchedule } from '../hooks/use-schedule';
+import { AppHeader } from '@/shared/components/app-header';
 import type { DoseItem, ScheduleSection } from '../types/schedule.types';
 
 const WEEK_DAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
@@ -28,10 +29,7 @@ export default function ScheduleScreen({ patientId }: { patientId?: string } = {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
-      {/* Header */}
-      <View className="bg-[#F9F9FB] border-b-2 border-[#C1C6D5] h-12 flex-row items-center px-5">
-        <Text className="text-[#004E9F] text-base font-semibold">CareConnect</Text>
-      </View>
+      <AppHeader />
 
       {/* Week selector */}
       <View className="bg-white border-b-2 border-[#C1C6D5] px-4 py-3">

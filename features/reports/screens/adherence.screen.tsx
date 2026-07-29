@@ -8,6 +8,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAdherence } from '../hooks/use-adherence';
+import { AppHeader } from '@/shared/components/app-header';
 import type { MedicationAdherence, ReportPeriod } from '../types/report.types';
 
 const PERIODS: { key: ReportPeriod; label: string }[] = [
@@ -20,11 +21,7 @@ export default function AdherenceReportScreen({ patientId }: { patientId?: strin
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
-      {/* Header */}
-      <View className="bg-[#F9F9FB] border-b-2 border-[#C1C6D5] h-12 flex-row items-center justify-between px-5">
-        <Text className="text-[#004E9F] font-semibold text-base">Relatório de Aderência</Text>
-        <Ionicons name="share-outline" size={22} color="#414753" />
-      </View>
+      <AppHeader title="Relatório de Aderência" />
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
 

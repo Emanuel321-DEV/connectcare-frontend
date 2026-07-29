@@ -5,46 +5,23 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { usePatientHome } from '../hooks/use-patient-home';
-import { useAuthStore } from '@/features/auth/store/auth.store';
-import { AccountMenu } from '@/shared/components/account-menu';
+import { AppHeader } from '@/shared/components/app-header';
 import type { DoseItem } from '../types/schedule.types';
 
 export default function PatientHomeScreen() {
   const { data, loading, error, user } = usePatientHome();
-  const clearAuth = useAuthStore((s) => s.clearAuth);
-  const [menuVisible, setMenuVisible] = useState(false);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
   const firstName = user?.name?.split(' ')[0] ?? 'Paciente';
 
-  function handleLogout() {
-    clearAuth();
-    router.replace('/(auth)/login');
-  }
-
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
-      {/* Header */}
-      <View className="bg-[#F9F9FB] border-b-2 border-[#C1C6D5] h-12 flex-row items-center justify-between px-5">
-        <Text className="text-[#004E9F] text-base font-semibold">CareConnect</Text>
-        <View className="flex-row items-center" style={{ gap: 8 }}>
-          <TouchableOpacity className="w-10 h-10 items-center justify-center" onPress={() => router.push('/invite')}>
-            <Ionicons name="person-add-outline" size={22} color="#004E9F" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="w-9 h-9 rounded-full border-2 border-[#004E9F] bg-[#D7E3FF] items-center justify-center"
-            onPress={() => setMenuVisible(true)}
-          >
-            <Text className="text-[#004E9F] font-bold text-sm">{user?.name?.charAt(0).toUpperCase() ?? 'P'}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <AppHeader />
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
 
@@ -129,15 +106,6 @@ export default function PatientHomeScreen() {
           </View>
         )}
       </ScrollView>
-
-      <AccountMenu
-        visible={menuVisible}
-        onClose={() => setMenuVisible(false)}
-        userName={user?.name ?? 'Paciente'}
-        userEmail={user?.email}
-        accentColor="#004E9F"
-        onLogout={handleLogout}
-      />
     </SafeAreaView>
   );
 }
