@@ -13,6 +13,7 @@ import { apiClient } from '@/shared/services/api.client';
 import { API_ROUTES } from '@/shared/services/api.routes';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import type { Prescription } from '../types/prescription.types';
+import { utcClockToBrazilTime } from '@/shared/utils/time';
 
 export default function PrescriptionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -97,7 +98,7 @@ export default function PrescriptionDetailScreen() {
               {[
                 { label: 'Dosagem', value: med.dosage, icon: 'flask-outline' },
                 { label: 'Frequência', value: `A cada ${med.frequency}`, icon: 'repeat-outline' },
-                { label: 'Horários', value: med.time.join(' · '), icon: 'time-outline' },
+                { label: 'Horários', value: med.time.map(utcClockToBrazilTime).join(' · '), icon: 'time-outline' },
                 { label: 'Doses', value: `${med.doses} dose${med.doses > 1 ? 's' : ''}`, icon: 'list-outline' },
               ].map((item, i, arr) => (
                 <View key={item.label} className={`flex-row items-center px-5 py-4 ${i < arr.length - 1 ? 'border-b border-[#E8EAED]' : ''}`} style={{ gap: 14 }}>

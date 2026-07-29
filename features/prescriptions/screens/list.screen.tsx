@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { usePrescriptions } from '../hooks/use-prescriptions';
 import type { Prescription } from '../types/prescription.types';
+import { utcClockToBrazilTime } from '@/shared/utils/time';
 
 const FILTERS = [
   { key: 'all', label: 'Todas' },
@@ -99,7 +100,7 @@ function PrescriptionCard({ prescription: p, onPress }: { prescription: Prescrip
             {rest.length > 0 ? ` +${rest.length}` : ''}
           </Text>
           {first && (
-            <Text className="text-[#414753] text-sm">{first.dosage} · {first.time.join(', ')}</Text>
+            <Text className="text-[#414753] text-sm">{first.dosage} · {first.time.map(utcClockToBrazilTime).join(', ')}</Text>
           )}
         </View>
       </View>
