@@ -4,6 +4,7 @@ import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { MOCK_PATIENT_DETAIL } from '@/shared/mocks';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { utcClockToBrazilTime } from '@/shared/utils/time';
 import type { PatientDetail, PatientHistoryEntry, PatientPrescription } from '../types/caregiver.types';
 import type { Prescription } from '@/features/prescriptions/types/prescription.types';
 
@@ -49,7 +50,7 @@ function buildPrescriptions(prescriptions: Prescription[], doseRecords: RawDoseR
   return prescriptions.map((p) => {
     const recentMissed = doseRecords.some((r) => r.prescription_id === p.id && r.status === 'MISSED');
     const names = p.medicaments.map((m) => m.name).join(', ');
-    const schedule = p.medicaments.flatMap((m) => m.time).join(', ');
+    const schedule = p.medicaments.flatMap((m) => m.time.map(utcClockToBrazilTime)).join(', ');
     return {
       id: p.id,
       medication: names || 'Sem medicamentos',
