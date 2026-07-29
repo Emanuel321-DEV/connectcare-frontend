@@ -57,13 +57,16 @@ function groupIntoSections(doses: DoseItem[]): ScheduleSection[] {
     .filter((section) => section.doses.length > 0);
 }
 
-export function useSchedule() {
+// patientId: usado pelo cuidador pra ver a agenda de um paciente vinculado.
+// Quando omitido, usa o próprio usuário logado (fluxo do paciente).
+export function useSchedule(patientId?: string) {
   const [sections, setSections] = useState<ScheduleSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
+  const targetUserId = patientId ?? user?.id;
 
   const fetchSchedule = useCallback(async () => {
     setLoading(true);
@@ -74,7 +77,7 @@ export function useSchedule() {
         return;
       }
       const records = await apiClient.get<RawDoseRecord[] | null>(
-        API_ROUTES.users.doseRecords(user?.id ?? ''),
+        API_ROUTES.users.doseRecords(targetUserId ?? ''),
         token ?? undefined
       );
       const dateStr = selectedDate.toISOString().split('T')[0];
@@ -89,7 +92,7 @@ export function useSchedule() {
     } finally {
       setLoading(false);
     }
-  }, [selectedDate, user?.id, token]);
+  }, [selectedDate, targetUserId, token]);
 
   useEffect(() => { fetchSchedule(); }, [fetchSchedule]);
 

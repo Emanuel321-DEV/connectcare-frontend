@@ -15,8 +15,8 @@ const PERIODS: { key: ReportPeriod; label: string }[] = [
   { key: '30d', label: '1 mês' },
 ];
 
-export default function AdherenceReportScreen() {
-  const { report, period, setPeriod, loading, error } = useAdherence();
+export default function AdherenceReportScreen({ patientId }: { patientId?: string } = {}) {
+  const { report, period, setPeriod, loading, error } = useAdherence(patientId);
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
