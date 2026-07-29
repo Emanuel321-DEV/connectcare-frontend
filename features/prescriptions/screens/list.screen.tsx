@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
@@ -12,6 +13,7 @@ import { router } from 'expo-router';
 import { usePrescriptions } from '../hooks/use-prescriptions';
 import type { Prescription } from '../types/prescription.types';
 import { utcClockToBrazilTime } from '@/shared/utils/time';
+import { AppHeader } from '@/shared/components/app-header';
 
 const FILTERS = [
   { key: 'all', label: 'Todas' },
@@ -20,14 +22,11 @@ const FILTERS = [
 ] as const;
 
 export default function PrescriptionsListScreen() {
-  const { prescriptions, filter, setFilter, search, setSearch, loading, error } = usePrescriptions();
+  const { prescriptions, filter, setFilter, search, setSearch, loading, error, refetch } = usePrescriptions();
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
-      {/* Header */}
-      <View className="bg-[#F9F9FB] border-b-2 border-[#C1C6D5] h-12 flex-row items-center px-5">
-        <Text className="text-[#004E9F] text-base font-semibold">Minhas Prescrições</Text>
-      </View>
+      <AppHeader title="Minhas Prescrições" />
 
       {/* Search */}
       <View className="px-5 py-3 bg-white border-b border-[#E8EAED]">
@@ -57,7 +56,12 @@ export default function PrescriptionsListScreen() {
         ))}
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 20, gap: 12 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 20, gap: 12 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} colors={['#004E9F']} tintColor="#004E9F" />}
+      >
         {loading ? (
           <ActivityIndicator size="large" color="#004E9F" style={{ marginTop: 40 }} />
         ) : error ? (
