@@ -5,6 +5,7 @@ import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { MOCK_SCHEDULE } from '@/shared/mocks';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { isSameLocalDay } from '@/shared/utils/time';
 import type { DoseItem, DoseStatus, ScheduleSection } from '../types/schedule.types';
 
 // Formato real devolvido por GET /users/{userId}/dose-records (ver docs/api.yaml
@@ -80,9 +81,8 @@ export function useSchedule(patientId?: string) {
         API_ROUTES.users.doseRecords(targetUserId ?? ''),
         token ?? undefined
       );
-      const dateStr = selectedDate.toISOString().split('T')[0];
       const doses = (records ?? [])
-        .filter((r) => r.scheduled_at.startsWith(dateStr))
+        .filter((r) => isSameLocalDay(r.scheduled_at, selectedDate))
         .map(toDoseItem);
       setSections(groupIntoSections(doses));
     } catch (err) {

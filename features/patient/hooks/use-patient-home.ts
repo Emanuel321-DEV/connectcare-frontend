@@ -5,6 +5,7 @@ import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { MOCK_PATIENT_HOME } from '@/shared/mocks';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { isSameLocalDay } from '@/shared/utils/time';
 import type { DoseItem, PatientHomeData } from '../types/schedule.types';
 
 // Não existe endpoint /home no backend. Montamos o resumo a partir de
@@ -20,8 +21,8 @@ interface RawDoseRecord {
 }
 
 function buildHomeData(records: RawDoseRecord[]): PatientHomeData {
-  const todayStr = new Date().toISOString().split('T')[0];
-  const todayRecords = records.filter((r) => r.scheduled_at.startsWith(todayStr));
+  const today = new Date();
+  const todayRecords = records.filter((r) => isSameLocalDay(r.scheduled_at, today));
 
   const todayDoses: DoseItem[] = todayRecords.map((r) => ({
     id: r.id,
