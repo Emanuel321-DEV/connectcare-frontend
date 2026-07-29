@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -15,7 +16,7 @@ import type { DoseItem, ScheduleSection } from '../types/schedule.types';
 const WEEK_DAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
 export default function ScheduleScreen({ patientId }: { patientId?: string } = {}) {
-  const { sections, loading, error, selectedDate, setSelectedDate } = useSchedule(patientId);
+  const { sections, loading, error, selectedDate, setSelectedDate, refetch } = useSchedule(patientId);
 
   const today = new Date();
   const weekDates = Array.from({ length: 7 }, (_, i) => {
@@ -60,7 +61,12 @@ export default function ScheduleScreen({ patientId }: { patientId?: string } = {
         </View>
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 24, gap: 24 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 24, gap: 24 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} colors={['#004E9F']} tintColor="#004E9F" />}
+      >
         <Text style={{ fontSize: 18, fontWeight: '700', color: '#1A1C1E' }}>{formatted}</Text>
 
         {loading ? (

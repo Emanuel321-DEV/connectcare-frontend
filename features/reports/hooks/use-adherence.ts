@@ -96,5 +96,5 @@ export function useAdherence(patientId?: string) {
 
   useEffect(() => { fetchReport(); }, [fetchReport]);
 
-  return { report, period, setPeriod, loading, error };
+  return { report, period, setPeriod, loading, error, refetch: fetchReport };
 }

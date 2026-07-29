@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -17,13 +18,18 @@ const PERIODS: { key: ReportPeriod; label: string }[] = [
 ];
 
 export default function AdherenceReportScreen({ patientId }: { patientId?: string } = {}) {
-  const { report, period, setPeriod, loading, error } = useAdherence(patientId);
+  const { report, period, setPeriod, loading, error, refetch } = useAdherence(patientId);
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
       <AppHeader title="Relatório de Aderência" />
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} colors={['#004E9F']} tintColor="#004E9F" />}
+      >
 
         {/* Period selector */}
         <View className="flex-row bg-[#F3F3F6] rounded-xl p-1 mb-6" style={{ gap: 4 }}>
