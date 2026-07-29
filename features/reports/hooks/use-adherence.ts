@@ -61,13 +61,16 @@ function buildReport(records: RawDoseRecord[], period: ReportPeriod): AdherenceR
   return { overallPercentage, period, byMedication };
 }
 
-export function useAdherence() {
+// patientId: usado pelo cuidador pra ver o relatório de um paciente vinculado.
+// Quando omitido, usa o próprio usuário logado (fluxo do paciente).
+export function useAdherence(patientId?: string) {
   const [report, setReport] = useState<AdherenceReport | null>(null);
   const [period, setPeriod] = useState<ReportPeriod>('7d');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
+  const targetUserId = patientId ?? user?.id;
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
@@ -78,7 +81,7 @@ export function useAdherence() {
         return;
       }
       const records = await apiClient.get<RawDoseRecord[] | null>(
-        API_ROUTES.users.doseRecords(user?.id ?? ''),
+        API_ROUTES.users.doseRecords(targetUserId ?? ''),
         token ?? undefined
       );
       setReport(buildReport(records ?? [], period));
@@ -89,7 +92,7 @@ export function useAdherence() {
     } finally {
       setLoading(false);
     }
-  }, [period, user?.id, token]);
+  }, [period, targetUserId, token]);
 
   useEffect(() => { fetchReport(); }, [fetchReport]);
 

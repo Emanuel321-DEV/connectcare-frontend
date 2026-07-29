@@ -13,8 +13,8 @@ import type { DoseItem, ScheduleSection } from '../types/schedule.types';
 
 const WEEK_DAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
-export default function ScheduleScreen() {
-  const { sections, loading, error, selectedDate, setSelectedDate } = useSchedule();
+export default function ScheduleScreen({ patientId }: { patientId?: string } = {}) {
+  const { sections, loading, error, selectedDate, setSelectedDate } = useSchedule(patientId);
 
   const today = new Date();
   const weekDates = Array.from({ length: 7 }, (_, i) => {
