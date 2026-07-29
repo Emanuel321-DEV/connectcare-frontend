@@ -9,29 +9,32 @@ import { isSameLocalDay } from '@/shared/utils/time';
 import type { DoseItem, PatientHomeData } from '../types/schedule.types';
 
 // Não existe endpoint /home no backend. Montamos o resumo a partir de
-// GET /users/{userId}/dose-records (ver docs/api.yaml, schema DoseRecord).
-interface RawDoseRecord {
-  id: string;
+// GET /users/{userId}/doses (ver docs/api.yaml, schema ScheduledDose) — esse
+// endpoint já mescla doses futuras previstas com o histórico real, então
+// "Doses de Hoje" mostra também as que ainda não venceram, não só as passadas.
+interface RawScheduledDose {
   prescription_id: string;
   medicament_name: string;
   dosage: string;
   scheduled_at: string;
   status: 'PENDING' | 'TAKEN' | 'MISSED';
-  confirmed_at: string | null;
+  dose_record_id?: string;
+  confirmed_at?: string | null;
 }
 
-function buildHomeData(records: RawDoseRecord[]): PatientHomeData {
+function buildHomeData(records: RawScheduledDose[]): PatientHomeData {
   const today = new Date();
   const todayRecords = records.filter((r) => isSameLocalDay(r.scheduled_at, today));
 
   const todayDoses: DoseItem[] = todayRecords.map((r) => ({
-    id: r.id,
+    id: r.dose_record_id ?? `${r.prescription_id}-${r.scheduled_at}`,
     prescriptionId: r.prescription_id,
     medicamentName: r.medicament_name,
     dosage: r.dosage,
     scheduledTime: new Date(r.scheduled_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
     status: r.status === 'TAKEN' ? 'taken' : r.status === 'MISSED' ? 'skipped' : 'pending',
     takenAt: r.confirmed_at ?? undefined,
+    doseRecordId: r.dose_record_id,
   }));
 
   const takenCount = todayDoses.filter((d) => d.status === 'taken').length;
@@ -60,8 +63,8 @@ export function usePatientHome() {
         setData(MOCK_PATIENT_HOME);
         return;
       }
-      const records = await apiClient.get<RawDoseRecord[] | null>(
-        API_ROUTES.users.doseRecords(user?.id ?? ''),
+      const records = await apiClient.get<RawScheduledDose[] | null>(
+        API_ROUTES.users.doseSchedule(user?.id ?? ''),
         token ?? undefined
       );
       setData(buildHomeData(records ?? []));

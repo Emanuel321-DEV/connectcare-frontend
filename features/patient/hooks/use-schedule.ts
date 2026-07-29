@@ -8,37 +8,43 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { isSameLocalDay } from '@/shared/utils/time';
 import type { DoseItem, DoseStatus, ScheduleSection } from '../types/schedule.types';
 
-// Formato real devolvido por GET /users/{userId}/dose-records (ver docs/api.yaml
-// no repositório do backend, schema DoseRecord). Não existe endpoint /schedule.
-interface RawDoseRecord {
-  id: string;
+// Formato real devolvido por GET /users/{userId}/doses (ver docs/api.yaml no
+// repositório do backend, schema ScheduledDose). Diferente do antigo
+// /dose-records, esse endpoint já mescla doses futuras previstas (calculadas
+// a partir da prescrição) com o histórico real — por isso a Agenda passa a
+// mostrar doses de hoje/futuras antes delas vencerem, não só depois.
+interface RawScheduledDose {
   prescription_id: string;
   medicament_name: string;
   dosage: string;
   scheduled_at: string;
   status: 'PENDING' | 'TAKEN' | 'MISSED';
-  confirmed_at: string | null;
+  // Ausente quando a dose é só uma previsão (ainda não venceu, não existe
+  // dose_record real no backend) — nesse caso não dá pra confirmar/pular.
+  dose_record_id?: string;
+  confirmed_at?: string | null;
 }
 
-const STATUS_MAP: Record<RawDoseRecord['status'], DoseStatus> = {
+const STATUS_MAP: Record<RawScheduledDose['status'], DoseStatus> = {
   PENDING: 'pending',
   TAKEN: 'taken',
   MISSED: 'skipped',
 };
 
-function toDoseItem(record: RawDoseRecord): DoseItem {
-  const scheduledTime = new Date(record.scheduled_at).toLocaleTimeString('pt-BR', {
+function toDoseItem(dose: RawScheduledDose): DoseItem {
+  const scheduledTime = new Date(dose.scheduled_at).toLocaleTimeString('pt-BR', {
     hour: '2-digit',
     minute: '2-digit',
   });
   return {
-    id: record.id,
-    prescriptionId: record.prescription_id,
-    medicamentName: record.medicament_name,
-    dosage: record.dosage,
+    id: dose.dose_record_id ?? `${dose.prescription_id}-${dose.scheduled_at}`,
+    prescriptionId: dose.prescription_id,
+    medicamentName: dose.medicament_name,
+    dosage: dose.dosage,
     scheduledTime,
-    status: STATUS_MAP[record.status],
-    takenAt: record.confirmed_at ?? undefined,
+    status: STATUS_MAP[dose.status],
+    takenAt: dose.confirmed_at ?? undefined,
+    doseRecordId: dose.dose_record_id,
   };
 }
 
@@ -53,7 +59,9 @@ function groupIntoSections(doses: DoseItem[]): ScheduleSection[] {
     .map(({ label, timeRange, test }) => ({
       label,
       timeRange,
-      doses: doses.filter((d) => test(Number(d.scheduledTime.split(':')[0]))),
+      doses: doses
+        .filter((d) => test(Number(d.scheduledTime.split(':')[0])))
+        .sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime)),
     }))
     .filter((section) => section.doses.length > 0);
 }
@@ -77,8 +85,8 @@ export function useSchedule(patientId?: string) {
         setSections(MOCK_SCHEDULE);
         return;
       }
-      const records = await apiClient.get<RawDoseRecord[] | null>(
-        API_ROUTES.users.doseRecords(targetUserId ?? ''),
+      const records = await apiClient.get<RawScheduledDose[] | null>(
+        API_ROUTES.users.doseSchedule(targetUserId ?? ''),
         token ?? undefined
       );
       const doses = (records ?? [])

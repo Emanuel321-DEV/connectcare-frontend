@@ -126,13 +126,18 @@ function DoseScheduleCard({ dose }: { dose: DoseItem }) {
           <Text className="text-[#9AA0A6] text-xs">{dose.scheduledTime}</Text>
         </View>
       </View>
-      {dose.status === 'pending' && (
+      {dose.status === 'pending' && dose.doseRecordId && (
         <TouchableOpacity
           className="bg-[#004E9F] rounded-lg px-4 py-2"
-          onPress={() => router.push({ pathname: '/confirm-dose', params: { doseId: dose.id, prescriptionId: dose.prescriptionId, medicamentName: dose.medicamentName, dosage: dose.dosage, scheduledTime: dose.scheduledTime } })}
+          onPress={() => router.push({ pathname: '/confirm-dose', params: { doseId: dose.doseRecordId, prescriptionId: dose.prescriptionId, medicamentName: dose.medicamentName, dosage: dose.dosage, scheduledTime: dose.scheduledTime } })}
         >
           <Text className="text-white text-sm font-semibold">Tomar</Text>
         </TouchableOpacity>
+      )}
+      {dose.status === 'pending' && !dose.doseRecordId && (
+        <View style={{ backgroundColor: '#F3F3F6', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 99 }}>
+          <Text style={{ fontSize: 12, fontWeight: '600', color: '#9AA0A6' }}>Previsto</Text>
+        </View>
       )}
       {dose.status !== 'pending' && (
         <View style={{ backgroundColor: s.bg, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 99 }}>
