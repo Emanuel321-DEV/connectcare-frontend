@@ -38,21 +38,23 @@ function buildReport(records: RawDoseRecord[], period: ReportPeriod): AdherenceR
     byPrescription.set(record.prescription_id, list);
   }
 
-  const byMedication: MedicationAdherence[] = Array.from(byPrescription.entries()).map(
-    ([prescriptionId, recs]) => {
+  const byMedication: MedicationAdherence[] = Array.from(byPrescription.entries())
+    .map(([prescriptionId, recs]) => {
       const taken = recs.filter((r) => r.status === 'TAKEN').length;
       const scheduled = recs.filter((r) => r.status === 'TAKEN' || r.status === 'MISSED').length;
-      const percentage = scheduled > 0 ? Math.round((taken / scheduled) * 100) : 100;
       return {
         prescriptionId,
         medicamentName: recs[0].medicament_name,
         dosage: recs[0].dosage,
-        percentage,
+        percentage: scheduled > 0 ? Math.round((taken / scheduled) * 100) : 0,
         taken,
         scheduled,
       };
-    }
-  );
+    })
+    // Sem nenhuma dose tomada ou perdida ainda (tudo PENDING) — não tem dado
+    // real pra calcular adesão, então não mostra o medicamento na lista em
+    // vez de exibir um 100% que não significa nada.
+    .filter((m) => m.scheduled > 0);
 
   const totalTaken = windowed.filter((r) => r.status === 'TAKEN').length;
   const totalScheduled = windowed.filter((r) => r.status === 'TAKEN' || r.status === 'MISSED').length;
