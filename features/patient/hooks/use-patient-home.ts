@@ -41,9 +41,16 @@ function buildHomeData(records: RawScheduledDose[]): PatientHomeData {
   const pendingCount = todayDoses.filter((d) => d.status === 'pending').length;
   const skippedCount = todayDoses.filter((d) => d.status === 'skipped').length;
 
-  const totalTaken = records.filter((r) => r.status === 'TAKEN').length;
-  const totalFinished = records.filter((r) => r.status === 'TAKEN' || r.status === 'MISSED').length;
-  const adherencePercentage = totalFinished > 0 ? Math.round((totalTaken / totalFinished) * 100) : 100;
+  // /doses inclui dose futura prevista (ainda não venceu) — essa não pode
+  // contar contra a adesão. Só entra no cálculo quem já devia ter acontecido:
+  // TAKEN, MISSED, ou PENDING com scheduled_at no passado (venceu e ninguém
+  // confirmou nem pulou).
+  const now = new Date();
+  const dueRecords = records.filter(
+    (r) => r.status === 'TAKEN' || r.status === 'MISSED' || new Date(r.scheduled_at) <= now
+  );
+  const totalTaken = dueRecords.filter((r) => r.status === 'TAKEN').length;
+  const adherencePercentage = dueRecords.length > 0 ? Math.round((totalTaken / dueRecords.length) * 100) : 0;
 
   return { adherencePercentage, todayDoses, takenCount, pendingCount, skippedCount };
 }
