@@ -8,6 +8,10 @@ export interface DoseItem {
   scheduledTime: string;
   status: DoseStatus;
   takenAt?: string;
+  // Ausente = dose futura só prevista (calculada a partir da prescrição),
+  // ainda sem dose_record real criado no backend — não dá pra confirmar/
+  // pular uma dose que ainda não venceu.
+  doseRecordId?: string;
 }
 
 export interface ScheduleSection {

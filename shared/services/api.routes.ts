@@ -10,6 +10,9 @@ export const API_ROUTES = {
     patients: (userId: string) => `/users/${userId}/patients`,
     adherence: (userId: string, period: string) => `/users/${userId}/adherence?period=${period}`,
     doseRecords: (userId: string) => `/users/${userId}/dose-records`,
+    // Cronograma completo (doses futuras previstas + histórico real
+    // mesclado) — ver docs/api.yaml do backend, endpoint novo GET /users/{id}/doses.
+    doseSchedule: (userId: string) => `/users/${userId}/doses`,
     detail: (userId: string) => `/users/${userId}`,
     // Pacientes vinculados a um cuidador (ver docs/api.yaml do backend).
     charges: (caregiverId: string) => `/users/${caregiverId}/charges`,
