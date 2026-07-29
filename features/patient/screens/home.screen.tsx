@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -13,7 +14,7 @@ import { AppHeader } from '@/shared/components/app-header';
 import type { DoseItem } from '../types/schedule.types';
 
 export default function PatientHomeScreen() {
-  const { data, loading, error, user } = usePatientHome();
+  const { data, loading, error, user, refetch } = usePatientHome();
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
@@ -23,7 +24,12 @@ export default function PatientHomeScreen() {
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
       <AppHeader />
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} colors={['#004E9F']} tintColor="#004E9F" />}
+      >
 
         {/* Greeting */}
         <View style={{ marginBottom: 24 }}>

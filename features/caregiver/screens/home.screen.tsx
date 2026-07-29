@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -12,7 +13,7 @@ import { useCaregiverHome, type PatientSummary } from '../hooks/use-caregiver-ho
 import { AppHeader } from '@/shared/components/app-header';
 
 export default function CaregiverHomeScreen() {
-  const { patients, loading, error, user } = useCaregiverHome();
+  const { patients, loading, error, user, refetch } = useCaregiverHome();
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
@@ -22,7 +23,12 @@ export default function CaregiverHomeScreen() {
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
       <AppHeader />
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} colors={['#1B6D24']} tintColor="#1B6D24" />}
+      >
 
         {/* Greeting */}
         <View style={{ marginBottom: 24, gap: 4 }}>
