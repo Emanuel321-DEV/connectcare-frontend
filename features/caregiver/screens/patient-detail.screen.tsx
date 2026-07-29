@@ -41,7 +41,6 @@ export default function PatientDetailScreen({ patientId }: { patientId: string }
             </View>
             <View style={{ gap: 4 }}>
               <Text style={{ fontSize: 20, fontWeight: '700', color: '#1A1C1E' }}>{patient.name}</Text>
-              <Text className="text-[#414753] text-sm">{patient.age} anos</Text>
               <View className="flex-row items-center" style={{ gap: 4 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#34A853' }} />
                 <Text className="text-[#414753] text-sm">Adesão {patient.adherencePercentage}%</Text>
@@ -59,9 +58,9 @@ export default function PatientDetailScreen({ patientId }: { patientId: string }
                   <Text className="text-[#414753] text-sm">{p.schedule}</Text>
                 </View>
                 <Ionicons
-                  name={p.status === 'ok' ? 'checkmark-circle' : 'warning'}
+                  name={p.status === 'ok' ? 'checkmark-circle' : p.status === 'alert' ? 'warning' : 'time-outline'}
                   size={22}
-                  color={p.status === 'ok' ? '#34A853' : '#FBBC04'}
+                  color={p.status === 'ok' ? '#34A853' : p.status === 'alert' ? '#FBBC04' : '#9AA0A6'}
                 />
               </View>
             ))}
