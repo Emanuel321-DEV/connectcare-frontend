@@ -9,3 +9,16 @@ export function utcClockToBrazilTime(time: string): string {
   const hours = ((parseInt(hh, 10) - 3) + 24) % 24;
   return `${String(hours).padStart(2, '0')}:${mm}`;
 }
+
+// Compara se um timestamp ISO cai no mesmo dia-calendário local (fuso do
+// dispositivo) que uma data de referência. Não usar `isoString.startsWith(dateStr)`
+// com `toISOString()` pra isso — `toISOString()` sempre devolve a data em UTC,
+// que já é o dia seguinte no Brasil a partir de ~21h locais.
+export function isSameLocalDay(isoDateTime: string, reference: Date): boolean {
+  const d = new Date(isoDateTime);
+  return (
+    d.getFullYear() === reference.getFullYear() &&
+    d.getMonth() === reference.getMonth() &&
+    d.getDate() === reference.getDate()
+  );
+}
