@@ -38,10 +38,14 @@ function buildReport(records: RawDoseRecord[], period: ReportPeriod): AdherenceR
     byPrescription.set(record.prescription_id, list);
   }
 
-  const byMedication: MedicationAdherence[] = Array.from(byPrescription.entries())
-    .map(([prescriptionId, recs]) => {
+  // /dose-records só devolve dose já vencida (o worker só cria o registro
+  // quando a hora chega) — então um PENDING aqui significa "venceu e
+  // ninguém confirmou nem pulou", não "ainda vai acontecer". Por isso conta
+  // como não-aderência no denominador, em vez de ser ignorado.
+  const byMedication: MedicationAdherence[] = Array.from(byPrescription.entries()).map(
+    ([prescriptionId, recs]) => {
       const taken = recs.filter((r) => r.status === 'TAKEN').length;
-      const scheduled = recs.filter((r) => r.status === 'TAKEN' || r.status === 'MISSED').length;
+      const scheduled = recs.length;
       return {
         prescriptionId,
         medicamentName: recs[0].medicament_name,
@@ -50,15 +54,12 @@ function buildReport(records: RawDoseRecord[], period: ReportPeriod): AdherenceR
         taken,
         scheduled,
       };
-    })
-    // Sem nenhuma dose tomada ou perdida ainda (tudo PENDING) — não tem dado
-    // real pra calcular adesão, então não mostra o medicamento na lista em
-    // vez de exibir um 100% que não significa nada.
-    .filter((m) => m.scheduled > 0);
+    }
+  );
 
   const totalTaken = windowed.filter((r) => r.status === 'TAKEN').length;
-  const totalScheduled = windowed.filter((r) => r.status === 'TAKEN' || r.status === 'MISSED').length;
-  const overallPercentage = totalScheduled > 0 ? Math.round((totalTaken / totalScheduled) * 100) : 100;
+  const totalScheduled = windowed.length;
+  const overallPercentage = totalScheduled > 0 ? Math.round((totalTaken / totalScheduled) * 100) : 0;
 
   return { overallPercentage, period, byMedication };
 }

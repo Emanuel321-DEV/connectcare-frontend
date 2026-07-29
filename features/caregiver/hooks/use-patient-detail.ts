@@ -88,9 +88,12 @@ async function buildPatientDetail(patientId: string, token?: string): Promise<Pa
   const prescriptions = rawPrescriptions ?? [];
   const doseRecords = rawDoseRecords ?? [];
 
+  // /dose-records só devolve dose já vencida — um PENDING aqui é "venceu e
+  // ninguém confirmou nem pulou", então conta como não-aderência, não é
+  // ignorado do cálculo.
   const taken = doseRecords.filter((r) => r.status === 'TAKEN').length;
-  const finished = doseRecords.filter((r) => r.status === 'TAKEN' || r.status === 'MISSED').length;
-  const adherencePercentage = finished > 0 ? Math.round((taken / finished) * 100) : 100;
+  const total = doseRecords.length;
+  const adherencePercentage = total > 0 ? Math.round((taken / total) * 100) : 0;
 
   return {
     id: user.id,
