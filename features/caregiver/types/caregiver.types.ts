@@ -10,7 +10,7 @@ export interface PatientPrescription {
   id: string;
   medication: string;
   schedule: string;
-  status: 'ok' | 'alert';
+  status: 'ok' | 'alert' | 'neutral';
 }
 
 export interface PatientHistoryEntry {
@@ -23,7 +23,6 @@ export interface PatientHistoryEntry {
 export interface PatientDetail {
   id: string;
   name: string;
-  age: number;
   adherencePercentage: number;
   prescriptions: PatientPrescription[];
   history: PatientHistoryEntry[];

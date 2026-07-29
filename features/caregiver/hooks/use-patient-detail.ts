@@ -49,13 +49,18 @@ function formatHistoryDate(isoDate: string): string {
 function buildPrescriptions(prescriptions: Prescription[], doseRecords: RawDoseRecord[]): PatientPrescription[] {
   return prescriptions.map((p) => {
     const recentMissed = doseRecords.some((r) => r.prescription_id === p.id && r.status === 'MISSED');
+    const anyTaken = doseRecords.some((r) => r.prescription_id === p.id && r.status === 'TAKEN');
     const names = p.medicaments.map((m) => m.name).join(', ');
     const schedule = p.medicaments.flatMap((m) => m.time.map(utcClockToBrazilTime)).join(', ');
+    // 'ok' exige pelo menos uma dose de fato tomada — senão fica 'neutral'
+    // (ainda sem dado), pra não parecer que está tudo certo sem nenhuma
+    // confirmação real (ex: prescrição recém-criada, nenhuma dose vencida ainda).
+    const status: PatientPrescription['status'] = recentMissed ? 'alert' : anyTaken ? 'ok' : 'neutral';
     return {
       id: p.id,
       medication: names || 'Sem medicamentos',
       schedule,
-      status: recentMissed ? 'alert' : 'ok',
+      status,
     };
   });
 }
@@ -90,9 +95,6 @@ async function buildPatientDetail(patientId: string, token?: string): Promise<Pa
   return {
     id: user.id,
     name: user.name,
-    // O backend não tem campo de idade no schema User; não há como calcular
-    // isso a partir dos dados reais, então mantemos 0 em vez de inventar valor.
-    age: 0,
     adherencePercentage,
     prescriptions: buildPrescriptions(prescriptions, doseRecords),
     history: buildHistory(doseRecords),
