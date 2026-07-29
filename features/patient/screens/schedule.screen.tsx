@@ -83,7 +83,7 @@ export default function ScheduleScreen({ patientId }: { patientId?: string } = {
           </View>
         ) : (
           sections.map((section) => (
-            <ScheduleSectionView key={section.label} section={section} />
+            <ScheduleSectionView key={section.label} section={section} readOnly={!!patientId} />
           ))
         )}
       </ScrollView>
@@ -91,7 +91,7 @@ export default function ScheduleScreen({ patientId }: { patientId?: string } = {
   );
 }
 
-function ScheduleSectionView({ section }: { section: ScheduleSection }) {
+function ScheduleSectionView({ section, readOnly }: { section: ScheduleSection; readOnly: boolean }) {
   return (
     <View style={{ gap: 12 }}>
       <View className="flex-row items-center" style={{ gap: 8 }}>
@@ -100,13 +100,13 @@ function ScheduleSectionView({ section }: { section: ScheduleSection }) {
         <View className="flex-1 h-px bg-[#E8EAED]" />
       </View>
       {section.doses.map((dose) => (
-        <DoseScheduleCard key={dose.id} dose={dose} />
+        <DoseScheduleCard key={dose.id} dose={dose} readOnly={readOnly} />
       ))}
     </View>
   );
 }
 
-function DoseScheduleCard({ dose }: { dose: DoseItem }) {
+function DoseScheduleCard({ dose, readOnly }: { dose: DoseItem; readOnly: boolean }) {
   const statusConfig = {
     taken: { color: '#34A853', bg: '#E8F5E9', label: 'Tomado', icon: 'checkmark-circle' as const },
     pending: { color: '#004E9F', bg: '#EEF2FF', label: 'Pendente', icon: 'ellipse-outline' as const },
@@ -126,7 +126,7 @@ function DoseScheduleCard({ dose }: { dose: DoseItem }) {
           <Text className="text-[#9AA0A6] text-xs">{dose.scheduledTime}</Text>
         </View>
       </View>
-      {dose.status === 'pending' && dose.doseRecordId && (
+      {dose.status === 'pending' && dose.doseRecordId && !readOnly && (
         <TouchableOpacity
           className="bg-[#004E9F] rounded-lg px-4 py-2"
           onPress={() => router.push({ pathname: '/confirm-dose', params: { doseId: dose.doseRecordId, prescriptionId: dose.prescriptionId, medicamentName: dose.medicamentName, dosage: dose.dosage, scheduledTime: dose.scheduledTime } })}
@@ -134,9 +134,11 @@ function DoseScheduleCard({ dose }: { dose: DoseItem }) {
           <Text className="text-white text-sm font-semibold">Tomar</Text>
         </TouchableOpacity>
       )}
-      {dose.status === 'pending' && !dose.doseRecordId && (
+      {dose.status === 'pending' && (!dose.doseRecordId || readOnly) && (
         <View style={{ backgroundColor: '#F3F3F6', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 99 }}>
-          <Text style={{ fontSize: 12, fontWeight: '600', color: '#9AA0A6' }}>Previsto</Text>
+          <Text style={{ fontSize: 12, fontWeight: '600', color: '#9AA0A6' }}>
+            {dose.doseRecordId ? 'Pendente' : 'Previsto'}
+          </Text>
         </View>
       )}
       {dose.status !== 'pending' && (
