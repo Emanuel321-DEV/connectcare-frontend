@@ -12,9 +12,11 @@ import { router } from 'expo-router';
 import { usePatientHome } from '../hooks/use-patient-home';
 import { AppHeader } from '@/shared/components/app-header';
 import type { DoseItem } from '../types/schedule.types';
+import { usePrescriptions } from '@/features/prescriptions/hooks/use-prescriptions';
 
 export default function PatientHomeScreen() {
   const { data, loading, error, user, refetch } = usePatientHome();
+  const { prescriptions } = usePrescriptions();
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
@@ -95,9 +97,14 @@ export default function PatientHomeScreen() {
                 <Text style={{ fontSize: 18, fontWeight: '700', color: '#1A1C1E' }}>Doses de Hoje</Text>
                 <Text className="text-[#004E9F] font-semibold text-sm">{new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}</Text>
               </View>
-              {data.todayDoses.map((dose) => (
-                <DoseCard key={dose.id} dose={dose} />
-              ))}
+              {data.todayDoses.map((dose) => {
+                let p = prescriptions.find(p => p.id === dose.prescriptionId);
+                if(p && p.active){
+                  return <DoseCard key={dose.id} dose={dose} />
+                }
+
+                return null;
+              })}
             </View>
 
             {/* Ver agenda completa */}

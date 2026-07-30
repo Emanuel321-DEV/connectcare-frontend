@@ -12,11 +12,19 @@ import { router } from 'expo-router';
 import { useSchedule } from '../hooks/use-schedule';
 import { AppHeader } from '@/shared/components/app-header';
 import type { DoseItem, ScheduleSection } from '../types/schedule.types';
+import { usePrescriptions } from '@/features/prescriptions/hooks/use-prescriptions';
+import { Prescription } from '@/features/prescriptions/types/prescription.types';
 
 const WEEK_DAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
 export default function ScheduleScreen({ patientId }: { patientId?: string } = {}) {
   const { sections, loading, error, selectedDate, setSelectedDate, refetch } = useSchedule(patientId);
+  const { prescriptions } = usePrescriptions();
+
+  const sectionsFiltered = sections.filter(s => {
+    let ps = s.doses.map(d => d.prescriptionId);
+    return prescriptions.some(p => p.active && ps.includes(p.id));
+  });
 
   const today = new Date();
   const weekDates = Array.from({ length: 7 }, (_, i) => {
@@ -76,14 +84,14 @@ export default function ScheduleScreen({ patientId }: { patientId?: string } = {
             <Ionicons name="alert-circle-outline" size={48} color="#EA4335" />
             <Text className="text-[#EA4335] text-base text-center px-6">{error}</Text>
           </View>
-        ) : sections.length === 0 ? (
+        ) : sectionsFiltered.length === 0 ? (
           <View className="items-center py-16" style={{ gap: 8 }}>
             <Ionicons name="calendar-outline" size={48} color="#C1C6D5" />
             <Text className="text-[#9AA0A6] text-lg text-center">Nenhuma dose para este dia.</Text>
           </View>
         ) : (
-          sections.map((section) => (
-            <ScheduleSectionView key={section.label} section={section} readOnly={!!patientId} />
+          sectionsFiltered.map((section) => (
+            <ScheduleSectionView key={section.label} section={section} readOnly={!!patientId} prescriptions={prescriptions} />
           ))
         )}
       </ScrollView>
@@ -91,7 +99,7 @@ export default function ScheduleScreen({ patientId }: { patientId?: string } = {
   );
 }
 
-function ScheduleSectionView({ section, readOnly }: { section: ScheduleSection; readOnly: boolean }) {
+function ScheduleSectionView({ section, readOnly, prescriptions }: { section: ScheduleSection; readOnly: boolean, prescriptions: Prescription[] }) {
   return (
     <View style={{ gap: 12 }}>
       <View className="flex-row items-center" style={{ gap: 8 }}>
@@ -99,9 +107,13 @@ function ScheduleSectionView({ section, readOnly }: { section: ScheduleSection; 
         <Text className="text-[#9AA0A6] text-sm">({section.timeRange})</Text>
         <View className="flex-1 h-px bg-[#E8EAED]" />
       </View>
-      {section.doses.map((dose) => (
-        <DoseScheduleCard key={dose.id} dose={dose} readOnly={readOnly} />
-      ))}
+      {section.doses.map((dose) => {
+        let p = prescriptions.find(p => p.id === dose.prescriptionId);
+        if(p && p.active) {
+          return <DoseScheduleCard key={dose.id} dose={dose} readOnly={readOnly} />
+        }
+        return null;
+      })}
     </View>
   );
 }
