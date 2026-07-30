@@ -19,7 +19,7 @@ const WEEK_DAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
 export default function ScheduleScreen({ patientId }: { patientId?: string } = {}) {
   const { sections, loading, error, selectedDate, setSelectedDate, refetch } = useSchedule(patientId);
-  const { prescriptions } = usePrescriptions();
+  const { prescriptions } = usePrescriptions(patientId);
 
   const sectionsFiltered = sections.filter(s => {
     let ps = s.doses.map(d => d.prescriptionId);
