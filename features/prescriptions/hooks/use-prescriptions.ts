@@ -9,7 +9,9 @@ import type { Prescription } from '../types/prescription.types';
 
 type Filter = 'all' | 'active' | 'inactive';
 
-export function usePrescriptions() {
+// patientId: usado pelo cuidador pra ver as prescrições de um paciente
+// vinculado. Quando omitido, usa o próprio usuário logado (fluxo do paciente).
+export function usePrescriptions(patientId?: string) {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [filter, setFilter] = useState<Filter>('all');
   const [search, setSearch] = useState('');
@@ -17,6 +19,7 @@ export function usePrescriptions() {
   const [error, setError] = useState<string | null>(null);
   const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
+  const targetUserId = patientId ?? user?.id;
 
   const fetchPrescriptions = useCallback(async () => {
     setLoading(true);
@@ -27,7 +30,7 @@ export function usePrescriptions() {
         return;
       }
       const active = filter === 'all' ? undefined : filter === 'active';
-      const response = await apiClient.get<Prescription[] | null>(API_ROUTES.prescriptions.list(user?.id ?? '', active), token ?? undefined);
+      const response = await apiClient.get<Prescription[] | null>(API_ROUTES.prescriptions.list(targetUserId ?? '', active), token ?? undefined);
       // Backend retorna null (não []) quando o usuário não tem nenhuma prescrição.
       setPrescriptions(response ?? []);
     } catch (err) {
@@ -36,7 +39,7 @@ export function usePrescriptions() {
     } finally {
       setLoading(false);
     }
-  }, [filter, user?.id, token]);
+  }, [filter, targetUserId, token]);
 
   useEffect(() => { fetchPrescriptions(); }, [fetchPrescriptions]);
 
