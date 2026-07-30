@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { usePatientDetail } from '../hooks/use-patient-detail';
 
 export default function PatientDetailScreen({ patientId }: { patientId: string }) {
-  const { patient, loading } = usePatientDetail(patientId);
+  const { patient, loading, error } = usePatientDetail(patientId);
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
@@ -17,9 +17,16 @@ export default function PatientDetailScreen({ patientId }: { patientId: string }
         <Text className="text-[#004E9F] text-base font-semibold">Detalhes do Paciente</Text>
       </View>
 
-      {loading || !patient ? (
+      {loading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#004E9F" />
+        </View>
+      ) : error || !patient ? (
+        <View className="items-center py-16" style={{ gap: 8 }}>
+          <Ionicons name="alert-circle-outline" size={48} color="#EA4335" />
+          <Text className="text-[#EA4335] text-base text-center px-6">
+            {error ?? 'Não foi possível carregar os dados do paciente.'}
+          </Text>
         </View>
       ) : (
         <ScrollView
@@ -34,7 +41,6 @@ export default function PatientDetailScreen({ patientId }: { patientId: string }
             </View>
             <View style={{ gap: 4 }}>
               <Text style={{ fontSize: 20, fontWeight: '700', color: '#1A1C1E' }}>{patient.name}</Text>
-              <Text className="text-[#414753] text-sm">{patient.age} anos</Text>
               <View className="flex-row items-center" style={{ gap: 4 }}>
                 <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#34A853' }} />
                 <Text className="text-[#414753] text-sm">Adesão {patient.adherencePercentage}%</Text>
@@ -52,9 +58,9 @@ export default function PatientDetailScreen({ patientId }: { patientId: string }
                   <Text className="text-[#414753] text-sm">{p.schedule}</Text>
                 </View>
                 <Ionicons
-                  name={p.status === 'ok' ? 'checkmark-circle' : 'warning'}
+                  name={p.status === 'ok' ? 'checkmark-circle' : p.status === 'alert' ? 'warning' : 'time-outline'}
                   size={22}
-                  color={p.status === 'ok' ? '#34A853' : '#FBBC04'}
+                  color={p.status === 'ok' ? '#34A853' : p.status === 'alert' ? '#FBBC04' : '#9AA0A6'}
                 />
               </View>
             ))}

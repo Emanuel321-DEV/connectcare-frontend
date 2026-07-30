@@ -9,10 +9,17 @@ export const API_ROUTES = {
     schedule: (userId: string, date: string) => `/users/${userId}/schedule?date=${date}`,
     patients: (userId: string) => `/users/${userId}/patients`,
     adherence: (userId: string, period: string) => `/users/${userId}/adherence?period=${period}`,
-    notifications: (userId: string) => `/users/${userId}/notifications`,
-    notificationRead: (userId: string, notifId: string) => `/users/${userId}/notifications/${notifId}/read`,
-    invitesPending: (userId: string) => `/users/${userId}/invites/pending`,
-    invite: (userId: string) => `/users/${userId}/invite`,
+    doseRecords: (userId: string) => `/users/${userId}/dose-records`,
+    // Cronograma completo (doses futuras previstas + histórico real
+    // mesclado) — ver docs/api.yaml do backend, endpoint novo GET /users/{id}/doses.
+    doseSchedule: (userId: string) => `/users/${userId}/doses`,
+    detail: (userId: string) => `/users/${userId}`,
+    // Pacientes vinculados a um cuidador (ver docs/api.yaml do backend).
+    charges: (caregiverId: string) => `/users/${caregiverId}/charges`,
+    // Cuidadores vinculados a um paciente (ver docs/api.yaml do backend).
+    caregivers: (patientId: string) => `/users/${patientId}/caregivers`,
+    // Convites (pendentes e histórico) recebidos/criados por este usuário.
+    invitations: (userId: string) => `/users/${userId}/invitations`,
   },
 
   prescriptions: {
@@ -23,19 +30,21 @@ export const API_ROUTES = {
     detail: (id: string) => `/prescriptions/${id}`,
     activate: (id: string) => `/prescriptions/${id}/activate`,
     deactivate: (id: string) => `/prescriptions/${id}/deactivate`,
-    doseConfirm: (prescriptionId: string, doseId: string) =>
-      `/prescriptions/${prescriptionId}/doses/${doseId}/confirm`,
-    doseSkip: (prescriptionId: string, doseId: string) =>
-      `/prescriptions/${prescriptionId}/doses/${doseId}/skip`,
+    doseConfirm: (doseRecordId: string) => `/dose-records/${doseRecordId}/confirm`,
+    doseSkip: (doseRecordId: string) => `/dose-records/${doseRecordId}/miss`,
   },
 
   patients: {
-    detail: (patientId: string) => `/patients/${patientId}`,
+    // Não existe endpoint /patients/{id} no backend; usamos GET /users/{id}
+    // (schema User) e compomos o restante do PatientDetail no frontend.
+    detail: (patientId: string) => `/users/${patientId}`,
   },
 
   invites: {
-    validate: '/invites/validate',
-    accept: (inviteId: string) => `/invites/${inviteId}/accept`,
-    reject: (inviteId: string) => `/invites/${inviteId}/reject`,
+    // Rota real do backend é /invitations (não /invites). O elderly_id é
+    // derivado do token de quem chama; só precisa do email do cuidador.
+    create: () => `/invitations`,
+    accept: (token: string) => `/invitations/${token}/accept`,
+    reject: (token: string) => `/invitations/${token}/reject`,
   },
 };

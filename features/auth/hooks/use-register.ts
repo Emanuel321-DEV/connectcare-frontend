@@ -32,19 +32,31 @@ export function useRegister() {
     setError(null);
 
     try {
+      const backendRole = role === 'caregiver' ? 'CAREGIVER' : 'ELDERLY';
+
       if (USE_MOCK) {
         setAuth(MOCK_AUTH_RESPONSE.token, {
           ...MOCK_AUTH_RESPONSE.user,
           name: name.trim(),
           email: email.trim(),
           phone: phone.trim(),
+          role: backendRole,
         });
       } else {
-        const payload: RegisterRequest = { name: name.trim(), email: email.trim(), phone: phone.trim(), password };
-        const response = await apiClient.post<LoginResponse>(API_ROUTES.auth.register, payload);
-        setAuth(response.token, response.user);
+        const payload: RegisterRequest = { name: name.trim(), email: email.trim(), phone: phone.trim(), password, role: backendRole };
+        await apiClient.post(API_ROUTES.auth.register, payload);
+        // /auth/register não retorna token (bug conhecido da API), então
+        // logamos imediatamente depois pra obter um token válido de verdade.
+        const loginResponse = await apiClient.post<LoginResponse>(API_ROUTES.auth.login, {
+          email: email.trim(),
+          password,
+        });
+        // /auth/login não devolve o campo role (bug conhecido da API) — como
+        // acabamos de registrar com backendRole, usamos esse valor direto em
+        // vez de confiar no que (não) vem na resposta do login.
+        setAuth(loginResponse.token, { ...loginResponse.user, role: backendRole });
       }
-      router.replace('/(tabs)');
+      router.replace(backendRole === 'CAREGIVER' ? '/(caregiver)' : '/(tabs)');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar conta.');
     } finally {

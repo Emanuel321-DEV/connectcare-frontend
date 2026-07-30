@@ -5,7 +5,7 @@ import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { MOCK_AUTH_RESPONSE } from '@/shared/mocks';
 import { useAuthStore } from '../store/auth.store';
-import type { LoginResponse } from '../types/auth.types';
+import type { LoginResponse, User } from '../types/auth.types';
 
 export function useLogin() {
   const [email, setEmail] = useState('');
@@ -26,16 +26,26 @@ export function useLogin() {
     setError(null);
 
     try {
+      let user;
       if (USE_MOCK) {
-        setAuth(MOCK_AUTH_RESPONSE.token, { ...MOCK_AUTH_RESPONSE.user, email: email.trim() });
+        user = { ...MOCK_AUTH_RESPONSE.user, email: email.trim() };
+        setAuth(MOCK_AUTH_RESPONSE.token, user);
       } else {
         const response = await apiClient.post<LoginResponse>(API_ROUTES.auth.login, {
           email: email.trim(),
           password,
         });
-        setAuth(response.token, response.user);
+        user = response.user;
+        // /auth/login não devolve o campo role (bug conhecido da API, diferente
+        // de GET /users/{id}) — buscamos o usuário completo pra saber o papel real.
+        if (!user.role) {
+          try {
+            user = await apiClient.get<User>(API_ROUTES.users.detail(user.id), response.token);
+          } catch { /* mantém o user do login mesmo sem role, cai no fallback abaixo */ }
+        }
+        setAuth(response.token, user);
       }
-      router.replace('/(tabs)');
+      router.replace(user.role === 'CAREGIVER' ? '/(caregiver)' : '/(tabs)');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao fazer login.');
     } finally {

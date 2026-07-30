@@ -10,8 +10,9 @@ export interface Prescription {
   id: string;
   userId: string;
   medicId: string;
-  medicName: string;
   active: boolean;
-  medicament: Medicament;
+  // O backend suporta várias medicações por prescrição (ver docs/api.yaml
+  // do backend, schema Prescription.medicaments) — nunca é um único item.
+  medicaments: Medicament[];
   createdAt: string;
 }

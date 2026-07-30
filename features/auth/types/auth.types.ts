@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   phone: string;
+  role: 'ELDERLY' | 'CAREGIVER';
 }
 
 export interface LoginRequest {
@@ -20,4 +21,5 @@ export interface RegisterRequest {
   email: string;
   phone: string;
   password: string;
+  role: 'ELDERLY' | 'CAREGIVER';
 }

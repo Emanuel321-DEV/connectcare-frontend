@@ -41,7 +41,9 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -50,8 +52,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "d1182225-337e-4e08-9663-1d5c277773a3"
+        "projectId": "eb2b1463-ffa3-42b2-8cd8-ecad67058e8f"
       }
-    }
+    },
+    "owner": "emanuelcontact01"
   }
 }

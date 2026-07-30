@@ -9,7 +9,6 @@ export const MOCK_PATIENTS: PatientSummary[] = [
 export const MOCK_PATIENT_DETAIL: PatientDetail = {
   id: '2',
   name: 'Dona Maria Sousa',
-  age: 74,
   adherencePercentage: 85,
   prescriptions: [
     { id: '1', medication: 'Losartana 50mg', schedule: '08:00 e 20:00', status: 'ok' },

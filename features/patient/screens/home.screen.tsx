@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -9,10 +10,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { usePatientHome } from '../hooks/use-patient-home';
+import { AppHeader } from '@/shared/components/app-header';
 import type { DoseItem } from '../types/schedule.types';
+import { usePrescriptions } from '@/features/prescriptions/hooks/use-prescriptions';
 
 export default function PatientHomeScreen() {
-  const { data, loading, user } = usePatientHome();
+  const { data, loading, error, user, refetch } = usePatientHome();
+  const { prescriptions } = usePrescriptions();
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
@@ -20,20 +24,14 @@ export default function PatientHomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
-      {/* Header */}
-      <View className="bg-[#F9F9FB] border-b-2 border-[#C1C6D5] h-12 flex-row items-center justify-between px-5">
-        <Text className="text-[#004E9F] text-base font-semibold">CareConnect</Text>
-        <View className="flex-row items-center" style={{ gap: 8 }}>
-          <TouchableOpacity className="w-10 h-10 items-center justify-center" onPress={() => router.push('/invite')}>
-            <Ionicons name="person-add-outline" size={22} color="#004E9F" />
-          </TouchableOpacity>
-          <View className="w-9 h-9 rounded-full border-2 border-[#004E9F] bg-[#D7E3FF] items-center justify-center">
-            <Text className="text-[#004E9F] font-bold text-sm">{user?.name?.charAt(0).toUpperCase() ?? 'P'}</Text>
-          </View>
-        </View>
-      </View>
+      <AppHeader />
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} colors={['#004E9F']} tintColor="#004E9F" />}
+      >
 
         {/* Greeting */}
         <View style={{ marginBottom: 24 }}>
@@ -43,8 +41,15 @@ export default function PatientHomeScreen() {
           </Text>
         </View>
 
-        {loading || !data ? (
+        {loading ? (
           <ActivityIndicator size="large" color="#004E9F" style={{ marginTop: 40 }} />
+        ) : error || !data ? (
+          <View className="items-center py-16" style={{ gap: 8 }}>
+            <Ionicons name="alert-circle-outline" size={48} color="#EA4335" />
+            <Text className="text-[#EA4335] text-base text-center px-6">
+              {error ?? 'Não foi possível carregar seus dados.'}
+            </Text>
+          </View>
         ) : (
           <View style={{ gap: 20 }}>
             {/* Adherence card */}
@@ -92,9 +97,14 @@ export default function PatientHomeScreen() {
                 <Text style={{ fontSize: 18, fontWeight: '700', color: '#1A1C1E' }}>Doses de Hoje</Text>
                 <Text className="text-[#004E9F] font-semibold text-sm">{new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}</Text>
               </View>
-              {data.todayDoses.map((dose) => (
-                <DoseCard key={dose.id} dose={dose} />
-              ))}
+              {data.todayDoses.map((dose) => {
+                let p = prescriptions.find(p => p.id === dose.prescriptionId);
+                if(p && p.active){
+                  return <DoseCard key={dose.id} dose={dose} />
+                }
+
+                return null;
+              })}
             </View>
 
             {/* Ver agenda completa */}

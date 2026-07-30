@@ -4,32 +4,100 @@ import { API_ROUTES } from '@/shared/services/api.routes';
 import { USE_MOCK } from '@/shared/config/env';
 import { MOCK_REPORT } from '@/shared/mocks';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import type { AdherenceReport, ReportPeriod } from '../types/report.types';
+import type { AdherenceReport, MedicationAdherence, ReportPeriod } from '../types/report.types';
 
-export function useAdherence() {
+// Não existe endpoint /adherence no backend. Montamos o relatório a partir de
+// GET /users/{userId}/dose-records (ver docs/api.yaml, schema DoseRecord),
+// filtrando pela janela de dias do período e calculando os percentuais aqui.
+interface RawDoseRecord {
+  id: string;
+  prescription_id: string;
+  medicament_name: string;
+  dosage: string;
+  scheduled_at: string;
+  status: 'PENDING' | 'TAKEN' | 'MISSED';
+  confirmed_at: string | null;
+}
+
+const PERIOD_DAYS: Record<ReportPeriod, number> = {
+  '7d': 7,
+  '30d': 30,
+};
+
+function buildReport(records: RawDoseRecord[], period: ReportPeriod): AdherenceReport {
+  const days = PERIOD_DAYS[period];
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+
+  const windowed = records.filter((r) => new Date(r.scheduled_at) >= cutoff);
+
+  const byPrescription = new Map<string, RawDoseRecord[]>();
+  for (const record of windowed) {
+    const list = byPrescription.get(record.prescription_id) ?? [];
+    list.push(record);
+    byPrescription.set(record.prescription_id, list);
+  }
+
+  // /dose-records só devolve dose já vencida (o worker só cria o registro
+  // quando a hora chega) — então um PENDING aqui significa "venceu e
+  // ninguém confirmou nem pulou", não "ainda vai acontecer". Por isso conta
+  // como não-aderência no denominador, em vez de ser ignorado.
+  const byMedication: MedicationAdherence[] = Array.from(byPrescription.entries()).map(
+    ([prescriptionId, recs]) => {
+      const taken = recs.filter((r) => r.status === 'TAKEN').length;
+      const scheduled = recs.length;
+      return {
+        prescriptionId,
+        medicamentName: recs[0].medicament_name,
+        dosage: recs[0].dosage,
+        percentage: scheduled > 0 ? Math.round((taken / scheduled) * 100) : 0,
+        taken,
+        scheduled,
+      };
+    }
+  );
+
+  const totalTaken = windowed.filter((r) => r.status === 'TAKEN').length;
+  const totalScheduled = windowed.length;
+  const overallPercentage = totalScheduled > 0 ? Math.round((totalTaken / totalScheduled) * 100) : 0;
+
+  return { overallPercentage, period, byMedication };
+}
+
+// patientId: usado pelo cuidador pra ver o relatório de um paciente vinculado.
+// Quando omitido, usa o próprio usuário logado (fluxo do paciente).
+export function useAdherence(patientId?: string) {
   const [report, setReport] = useState<AdherenceReport | null>(null);
   const [period, setPeriod] = useState<ReportPeriod>('7d');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const user = useAuthStore((s) => s.user);
   const token = useAuthStore((s) => s.token);
+  const targetUserId = patientId ?? user?.id;
 
   const fetchReport = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       if (USE_MOCK) {
         setReport({ ...MOCK_REPORT, period });
         return;
       }
-      const response = await apiClient.get<AdherenceReport>(API_ROUTES.users.adherence(user?.id ?? '', period), token ?? undefined);
-      setReport(response);
-    } catch {
-      setReport({ ...MOCK_REPORT, period });
+      const records = await apiClient.get<RawDoseRecord[] | null>(
+        API_ROUTES.users.doseRecords(targetUserId ?? ''),
+        token ?? undefined
+      );
+      setReport(buildReport(records ?? [], period));
+    } catch (err) {
+      // Erro real do backend — não mascarar com dado mockado.
+      setReport(null);
+      setError(err instanceof Error ? err.message : 'Não foi possível carregar o relatório.');
     } finally {
       setLoading(false);
     }
-  }, [period, user?.id, token]);
+  }, [period, targetUserId, token]);
 
   useEffect(() => { fetchReport(); }, [fetchReport]);
 
-  return { report, period, setPeriod, loading };
+  return { report, period, setPeriod, loading, error, refetch: fetchReport };
 }

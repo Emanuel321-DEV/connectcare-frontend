@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -8,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAdherence } from '../hooks/use-adherence';
+import { AppHeader } from '@/shared/components/app-header';
 import type { MedicationAdherence, ReportPeriod } from '../types/report.types';
 
 const PERIODS: { key: ReportPeriod; label: string }[] = [
@@ -15,18 +17,19 @@ const PERIODS: { key: ReportPeriod; label: string }[] = [
   { key: '30d', label: '1 mês' },
 ];
 
-export default function AdherenceReportScreen() {
-  const { report, period, setPeriod, loading } = useAdherence();
+export default function AdherenceReportScreen({ patientId }: { patientId?: string } = {}) {
+  const { report, period, setPeriod, loading, error, refetch } = useAdherence(patientId);
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
-      {/* Header */}
-      <View className="bg-[#F9F9FB] border-b-2 border-[#C1C6D5] h-12 flex-row items-center justify-between px-5">
-        <Text className="text-[#004E9F] font-semibold text-base">Relatório de Aderência</Text>
-        <Ionicons name="share-outline" size={22} color="#414753" />
-      </View>
+      <AppHeader title="Relatório de Aderência" />
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} colors={['#004E9F']} tintColor="#004E9F" />}
+      >
 
         {/* Period selector */}
         <View className="flex-row bg-[#F3F3F6] rounded-xl p-1 mb-6" style={{ gap: 4 }}>
@@ -44,8 +47,15 @@ export default function AdherenceReportScreen() {
           ))}
         </View>
 
-        {loading || !report ? (
+        {loading ? (
           <ActivityIndicator size="large" color="#004E9F" style={{ marginTop: 60 }} />
+        ) : error || !report ? (
+          <View className="items-center py-16" style={{ gap: 8 }}>
+            <Ionicons name="alert-circle-outline" size={48} color="#EA4335" />
+            <Text className="text-[#EA4335] text-base text-center px-6">
+              {error ?? 'Não foi possível carregar o relatório.'}
+            </Text>
+          </View>
         ) : (
           <View style={{ gap: 24 }}>
             {/* Overall */}

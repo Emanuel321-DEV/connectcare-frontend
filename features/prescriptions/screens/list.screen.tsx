@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
@@ -11,6 +12,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { usePrescriptions } from '../hooks/use-prescriptions';
 import type { Prescription } from '../types/prescription.types';
+import { utcClockToBrazilTime } from '@/shared/utils/time';
+import { AppHeader } from '@/shared/components/app-header';
 
 const FILTERS = [
   { key: 'all', label: 'Todas' },
@@ -19,15 +22,11 @@ const FILTERS = [
 ] as const;
 
 export default function PrescriptionsListScreen() {
-  const { prescriptions, filter, setFilter, search, setSearch, loading } = usePrescriptions();
+  const { prescriptions, filter, setFilter, search, setSearch, loading, error, refetch } = usePrescriptions();
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
-      {/* Header */}
-      <View className="bg-[#F9F9FB] border-b-2 border-[#C1C6D5] h-12 flex-row items-center justify-between px-5">
-        <Text className="text-[#004E9F] text-base font-semibold">Minhas Prescrições</Text>
-        <Ionicons name="notifications-outline" size={22} color="#004E9F" />
-      </View>
+      <AppHeader title="Minhas Prescrições" />
 
       {/* Search */}
       <View className="px-5 py-3 bg-white border-b border-[#E8EAED]">
@@ -57,9 +56,21 @@ export default function PrescriptionsListScreen() {
         ))}
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 20, gap: 12 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 20, gap: 12 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} colors={['#004E9F']} tintColor="#004E9F" />}
+      >
         {loading ? (
           <ActivityIndicator size="large" color="#004E9F" style={{ marginTop: 40 }} />
+        ) : error ? (
+          <View className="items-center py-16" style={{ gap: 8 }}>
+            <Ionicons name="alert-circle-outline" size={48} color="#EA4335" />
+            <Text className="text-[#EA4335] text-base text-center px-6">
+              {error ?? 'Não foi possível carregar as prescrições.'}
+            </Text>
+          </View>
         ) : prescriptions.length === 0 ? (
           <View className="items-center py-16" style={{ gap: 8 }}>
             <Ionicons name="document-outline" size={48} color="#C1C6D5" />
@@ -76,6 +87,7 @@ export default function PrescriptionsListScreen() {
 }
 
 function PrescriptionCard({ prescription: p, onPress }: { prescription: Prescription; onPress: () => void }) {
+  const [first, ...rest] = p.medicaments;
   return (
     <TouchableOpacity
       className="bg-white border-2 border-[#C1C6D5] rounded-xl p-5 flex-row items-center justify-between"
@@ -88,10 +100,12 @@ function PrescriptionCard({ prescription: p, onPress }: { prescription: Prescrip
         </View>
         <View className="flex-1" style={{ gap: 3 }}>
           <Text style={{ fontSize: 16, fontWeight: '700', color: '#1A1C1E' }} numberOfLines={1}>
-            {p.medicament.name}
+            {first ? first.name : 'Sem medicamentos'}
+            {rest.length > 0 ? ` +${rest.length}` : ''}
           </Text>
-          <Text className="text-[#414753] text-sm">{p.medicament.dosage} · {p.medicament.time.join(', ')}</Text>
-          <Text className="text-[#9AA0A6] text-xs">{p.medicName}</Text>
+          {first && (
+            <Text className="text-[#414753] text-sm">{first.dosage} · {first.time.map(utcClockToBrazilTime).join(', ')}</Text>
+          )}
         </View>
       </View>
       <View className="flex-row items-center" style={{ gap: 10 }}>

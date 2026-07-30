@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -9,12 +10,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSchedule } from '../hooks/use-schedule';
+import { AppHeader } from '@/shared/components/app-header';
 import type { DoseItem, ScheduleSection } from '../types/schedule.types';
+import { usePrescriptions } from '@/features/prescriptions/hooks/use-prescriptions';
+import { Prescription } from '@/features/prescriptions/types/prescription.types';
 
 const WEEK_DAYS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
-export default function ScheduleScreen() {
-  const { sections, loading, selectedDate, setSelectedDate } = useSchedule();
+export default function ScheduleScreen({ patientId }: { patientId?: string } = {}) {
+  const { sections, loading, error, selectedDate, setSelectedDate, refetch } = useSchedule(patientId);
+  const { prescriptions } = usePrescriptions(patientId);
+
+  const sectionsFiltered = sections.filter(s => {
+    let ps = s.doses.map(d => d.prescriptionId);
+    return prescriptions.some(p => p.active && ps.includes(p.id));
+  });
 
   const today = new Date();
   const weekDates = Array.from({ length: 7 }, (_, i) => {
@@ -28,11 +38,7 @@ export default function ScheduleScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
-      {/* Header */}
-      <View className="bg-[#F9F9FB] border-b-2 border-[#C1C6D5] h-12 flex-row items-center justify-between px-5">
-        <Text className="text-[#004E9F] text-base font-semibold">CareConnect</Text>
-        <Ionicons name="notifications-outline" size={22} color="#004E9F" />
-      </View>
+      <AppHeader />
 
       {/* Week selector */}
       <View className="bg-white border-b-2 border-[#C1C6D5] px-4 py-3">
@@ -63,35 +69,37 @@ export default function ScheduleScreen() {
         </View>
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 24, gap: 24 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 24, gap: 24 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} colors={['#004E9F']} tintColor="#004E9F" />}
+      >
         <Text style={{ fontSize: 18, fontWeight: '700', color: '#1A1C1E' }}>{formatted}</Text>
 
         {loading ? (
           <ActivityIndicator size="large" color="#004E9F" style={{ marginTop: 40 }} />
-        ) : sections.length === 0 ? (
+        ) : error ? (
+          <View className="items-center py-16" style={{ gap: 8 }}>
+            <Ionicons name="alert-circle-outline" size={48} color="#EA4335" />
+            <Text className="text-[#EA4335] text-base text-center px-6">{error}</Text>
+          </View>
+        ) : sectionsFiltered.length === 0 ? (
           <View className="items-center py-16" style={{ gap: 8 }}>
             <Ionicons name="calendar-outline" size={48} color="#C1C6D5" />
             <Text className="text-[#9AA0A6] text-lg text-center">Nenhuma dose para este dia.</Text>
           </View>
         ) : (
-          sections.map((section) => (
-            <ScheduleSectionView key={section.label} section={section} />
+          sectionsFiltered.map((section) => (
+            <ScheduleSectionView key={section.label} section={section} readOnly={!!patientId} prescriptions={prescriptions} />
           ))
         )}
-
-        <TouchableOpacity
-          className="border-2 border-[#004E9F] rounded-xl items-center justify-center"
-          style={{ height: 48 }}
-          activeOpacity={0.8}
-        >
-          <Text className="text-[#004E9F] font-semibold text-base">Ver Agenda Completa</Text>
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function ScheduleSectionView({ section }: { section: ScheduleSection }) {
+function ScheduleSectionView({ section, readOnly, prescriptions }: { section: ScheduleSection; readOnly: boolean, prescriptions: Prescription[] }) {
   return (
     <View style={{ gap: 12 }}>
       <View className="flex-row items-center" style={{ gap: 8 }}>
@@ -99,14 +107,18 @@ function ScheduleSectionView({ section }: { section: ScheduleSection }) {
         <Text className="text-[#9AA0A6] text-sm">({section.timeRange})</Text>
         <View className="flex-1 h-px bg-[#E8EAED]" />
       </View>
-      {section.doses.map((dose) => (
-        <DoseScheduleCard key={dose.id} dose={dose} />
-      ))}
+      {section.doses.map((dose) => {
+        let p = prescriptions.find(p => p.id === dose.prescriptionId);
+        if(p && p.active) {
+          return <DoseScheduleCard key={dose.id} dose={dose} readOnly={readOnly} />
+        }
+        return null;
+      })}
     </View>
   );
 }
 
-function DoseScheduleCard({ dose }: { dose: DoseItem }) {
+function DoseScheduleCard({ dose, readOnly }: { dose: DoseItem; readOnly: boolean }) {
   const statusConfig = {
     taken: { color: '#34A853', bg: '#E8F5E9', label: 'Tomado', icon: 'checkmark-circle' as const },
     pending: { color: '#004E9F', bg: '#EEF2FF', label: 'Pendente', icon: 'ellipse-outline' as const },
@@ -126,13 +138,20 @@ function DoseScheduleCard({ dose }: { dose: DoseItem }) {
           <Text className="text-[#9AA0A6] text-xs">{dose.scheduledTime}</Text>
         </View>
       </View>
-      {dose.status === 'pending' && (
+      {dose.status === 'pending' && dose.doseRecordId && !readOnly && (
         <TouchableOpacity
           className="bg-[#004E9F] rounded-lg px-4 py-2"
-          onPress={() => router.push({ pathname: '/confirm-dose', params: { doseId: dose.id, prescriptionId: dose.prescriptionId, medicamentName: dose.medicamentName, dosage: dose.dosage, scheduledTime: dose.scheduledTime } })}
+          onPress={() => router.push({ pathname: '/confirm-dose', params: { doseId: dose.doseRecordId, prescriptionId: dose.prescriptionId, medicamentName: dose.medicamentName, dosage: dose.dosage, scheduledTime: dose.scheduledTime } })}
         >
           <Text className="text-white text-sm font-semibold">Tomar</Text>
         </TouchableOpacity>
+      )}
+      {dose.status === 'pending' && (!dose.doseRecordId || readOnly) && (
+        <View style={{ backgroundColor: '#F3F3F6', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 99 }}>
+          <Text style={{ fontSize: 12, fontWeight: '600', color: '#9AA0A6' }}>
+            {dose.doseRecordId ? 'Pendente' : 'Previsto'}
+          </Text>
+        </View>
       )}
       {dose.status !== 'pending' && (
         <View style={{ backgroundColor: s.bg, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 99 }}>

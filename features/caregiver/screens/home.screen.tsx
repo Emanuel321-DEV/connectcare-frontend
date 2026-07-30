@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -9,9 +10,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useCaregiverHome, type PatientSummary } from '../hooks/use-caregiver-home';
+import { AppHeader } from '@/shared/components/app-header';
 
 export default function CaregiverHomeScreen() {
-  const { patients, loading, user } = useCaregiverHome();
+  const { patients, loading, error, user, refetch } = useCaregiverHome();
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
@@ -19,20 +21,14 @@ export default function CaregiverHomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F9F9FB]" edges={['top']}>
-      {/* Header */}
-      <View className="bg-[#F9F9FB] border-b-2 border-[#C1C6D5] h-12 flex-row items-center justify-between px-5">
-        <Text className="text-[#004E9F] text-base font-semibold">CareConnect</Text>
-        <View className="flex-row items-center" style={{ gap: 8 }}>
-          <TouchableOpacity className="w-10 h-10 items-center justify-center" onPress={() => router.push('/accept-invite')}>
-            <Ionicons name="person-add-outline" size={22} color="#004E9F" />
-          </TouchableOpacity>
-          <View className="w-9 h-9 rounded-full border-2 border-[#004E9F] bg-[#A3F69C] items-center justify-center">
-            <Text className="text-[#1B6D24] font-bold text-sm">{user?.name?.charAt(0).toUpperCase() ?? 'C'}</Text>
-          </View>
-        </View>
-      </View>
+      <AppHeader />
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 32 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} colors={['#1B6D24']} tintColor="#1B6D24" />}
+      >
 
         {/* Greeting */}
         <View style={{ marginBottom: 24, gap: 4 }}>
@@ -51,6 +47,13 @@ export default function CaregiverHomeScreen() {
 
         {loading ? (
           <ActivityIndicator size="large" color="#004E9F" style={{ marginTop: 40 }} />
+        ) : error ? (
+          <View className="items-center py-16" style={{ gap: 8 }}>
+            <Ionicons name="alert-circle-outline" size={48} color="#EA4335" />
+            <Text className="text-[#EA4335] text-base text-center px-6">
+              {error ?? 'Não foi possível carregar seus pacientes.'}
+            </Text>
+          </View>
         ) : (
           <View style={{ gap: 16 }}>
             {patients.map((patient) => (
@@ -100,8 +103,7 @@ function PatientCard({ patient }: { patient: PatientSummary }) {
         </View>
         <TouchableOpacity
           className="border-2 border-[#004E9F] rounded-lg px-4 py-2"
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onPress={() => router.push({ pathname: '/(caregiver)/patient-detail' as any, params: { patientId: patient.id } })}
+          onPress={() => router.push({ pathname: '/patient-detail', params: { patientId: patient.id } })}
         >
           <Text className="text-[#004E9F] text-sm font-semibold">Ver Detalhes</Text>
         </TouchableOpacity>
